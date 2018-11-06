@@ -1,12 +1,15 @@
 {
+	"author": "Doliman100",
 	"background": {
 		"persistent": true,
 		"scripts": [
 			"background.js"
 		]
 	},
+	"description": "Default image viewer with advanced functionality: rotating, fitting, moving.",
+	"homepage_url": "https://github.com/Doliman100/Simple-Image-Viewer",
 	"manifest_version": 2,
-	"name": "Image Viewer",
+	"name": "Simple Image Viewer",
 	"permissions": [
 		"file://*/*",
 		"http://*/*",
@@ -14,5 +17,6 @@
 		"tabs",
 		"webRequest"
 	],
+	"short_name": "Image Viewer",
 	"version": "1.0.0"
 }

@@ -2,8 +2,8 @@
 Moving the image with the mouse.
 
 ### Shortcuts
-* R - rotate cw 90 degrees
-* Shift + R - rotate ccw 90 degrees
-* 1 - fit
-* 2 - fill
-* 3 - natural
+* [R] - Rotate CW 90 degrees
+* [Shift + R] - Rotate CCW 90 degrees
+* [1] - Fit
+* [2] - Fill
+* [3] - Natural
