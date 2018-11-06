@@ -1,0 +1,18 @@
+{
+	"background": {
+		"persistent": true,
+		"scripts": [
+			"background.js"
+		]
+	},
+	"manifest_version": 2,
+	"name": "Image Viewer",
+	"permissions": [
+		"file://*/*",
+		"http://*/*",
+		"https://*/*",
+		"tabs",
+		"webRequest"
+	],
+	"version": "1.0.0"
+}
