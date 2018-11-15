@@ -1,7 +1,5 @@
 {
-	"author": "Doliman100",
 	"background": {
-		"persistent": true,
 		"scripts": [
 			"background.js"
 		]
@@ -17,6 +15,5 @@
 		"tabs",
 		"webRequest"
 	],
-	"short_name": "Image Viewer",
-	"version": "1.0.0"
+	"version": "1.0.1"
 }

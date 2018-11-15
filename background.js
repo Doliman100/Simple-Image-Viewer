@@ -20,10 +20,12 @@ function onHeadersReceived(details)
 		});
 }
 
-function onTabUpdated(_, _, tab)
+function onTabUpdated(_, changeInfo, tab)
 {
-	if (/^file:\/\/\/.+\.(jpg|png|gif|bmp|jpeg|webp)$/.test(tab.url) || tabs.has(tab.id))
+	if (/^file:\/\/\/.+\.(jpg|png|gif|bmp|jpeg|webp)$/.test(tab.url) && changeInfo.status === "loading" || tabs.has(tab.id))
 	{
+		// console.log(changeInfo, tab);
+
 		inject(tab.id);
 
 		tabs.delete(tab.id);

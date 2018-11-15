@@ -2,13 +2,13 @@ let doc_ratio;
 
 let img;
 let img_ratio;
-let img_original = true;
-let img_orientation = 0;
+let img_original = true; // is angle 0 or 180 degrees
+let img_orientation = 0; // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
 
-let fit_type;
+let fit_type; // 0 = fit, 1 = fill, 2 = natural
 
-let drag_offset_x;
-let drag_offset_y;
+let move_offset_x;
+let move_offset_y;
 
 // Compare
 function isWider()
@@ -101,7 +101,7 @@ function imgPos(x, y)
 function imgDraggable(state)
 {
 	if (state)
-		window.onmousedown = dragMouseDown;
+		window.onmousedown = onMouseDown;
 	else
 		window.onmousedown = undefined;
 }
@@ -141,7 +141,7 @@ function fitFill()
 
 	imgPos(0, 0);
 
-	scrollTo((imgWidth() - docWidthFull()) / 2, (imgHeight() - docHeightFull()) / 2);
+	scrollTo((imgWidth() - docWidthFull()) / 2, (imgHeight() - docHeightFull()) / 2); // combine this with line 154
 
 	imgDraggable(true);
 }
@@ -173,7 +173,7 @@ function fit()
 	}
 }
 
-function fitUpdate()
+function fitUpdate() // try to do something with these two functions
 {
 	if (fit_type == 0 && fitFitAvailable() || fit_type == 1 && fitFillAvailable() || (fit_type = 2))
 		fit();
@@ -192,9 +192,9 @@ function fitType(n)
 // Rotate
 function rotate()
 {
-	img.className = "orientation" + img_orientation;
+	img.className = "orientation-" + img_orientation;
 
-	img_original = !img_original;
+	img_original = !img_original; // img_orientation % 2
 
 	imgRatio();
 
@@ -215,24 +215,24 @@ function rotateCCW()
 	rotate();
 }
 
-// Drag
-function dragMouseDown(e)
+// Move
+function onMouseDown(e)
 {
-	drag_offset_x = scrollX + e.screenX;
-	drag_offset_y = scrollY + e.screenY;
+	move_offset_x = scrollX + e.screenX;
+	move_offset_y = scrollY + e.screenY;
 
-	window.onmouseup = dragMouseUp;
-	window.onmousemove = dragMouseMove;
+	window.onmouseup = onMouseUp;
+	window.onmousemove = onMouseMove;
 }
 
-function dragMouseMove(e)
+function onMouseMove(e)
 {
-	scrollTo(drag_offset_x - e.screenX, drag_offset_y - e.screenY);
+	scrollTo(move_offset_x - e.screenX, move_offset_y - e.screenY);
 
 	return false;
 }
 
-function dragMouseUp()
+function onMouseUp()
 {
 	window.onmouseup = undefined;
 	window.onmousemove = undefined;
@@ -277,6 +277,8 @@ document.body.removeAttribute("style");
 img.removeAttribute("style");
 img.removeAttribute("width");
 img.removeAttribute("height");
+
+img.className = "orientation-0";
 
 // 
 docRatio();
