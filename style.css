@@ -1,5 +1,5 @@
 body {
-	background-color: transparent !important;
+	background-color: initial !important;
 	user-select: none;
 }
 img[class] {
@@ -7,6 +7,7 @@ img[class] {
 	right: 0px;
 	bottom: 0px;
 	transform-origin: 0px 0px 0px;
+	cursor: initial !important;
 }
 .orientation-0 {
 	transform: translateZ(0px);

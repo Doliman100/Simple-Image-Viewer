@@ -238,19 +238,12 @@ function onMouseUp()
 	document.onmousemove = undefined;
 }
 
+// Disable default click event
+document.addEventListener("click", (e) => e.stopPropagation(), true);
+
 // Init
-img = document.getElementsByTagName("img")[0];
+img = document.body.firstChild;
 
-// Clear
-document.addEventListener("click", (e) => e.stopPropagation(), true); // Disable default click event
-
-document.body.removeAttribute("style");
-
-img.removeAttribute("style");
-img.removeAttribute("width");
-img.removeAttribute("height");
-
-// 
 docRatio();
 imgRatio();
 
@@ -266,7 +259,7 @@ window.onresize = function()
 {
 	docRatio();
 
-	fit();
+	fitUpdate();
 }
 
 document.onkeyup = function(e)
