@@ -2,12 +2,11 @@ body {
 	background-color: transparent !important;
 	user-select: none;
 }
-img {
+img[class] {
 	position: absolute;
 	right: 0px;
 	bottom: 0px;
 	transform-origin: 0px 0px 0px;
-	pointer-events: none;
 }
 .orientation-0 {
 	transform: translateZ(0px);

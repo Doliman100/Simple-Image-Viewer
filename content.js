@@ -98,12 +98,12 @@ function imgPos(x, y)
 	img.style.top = Math.max(y, 0) + "px";
 }
 
-function imgDraggable(state)
+function imgMovable(state)
 {
 	if (state)
-		window.onmousedown = onMouseDown;
+		document.onmousedown = onMouseDown;
 	else
-		window.onmousedown = undefined;
+		document.onmousedown = undefined;
 }
 
 // Fit
@@ -129,7 +129,7 @@ function fitFit()
 
 	imgPos((docWidthFull() - imgWidth()) / 2, (docHeightFull() - imgHeight()) / 2);
 
-	imgDraggable(false);
+	imgMovable(false);
 }
 
 function fitFill()
@@ -143,7 +143,7 @@ function fitFill()
 
 	scrollTo((imgWidth() - docWidthFull()) / 2, (imgHeight() - docHeightFull()) / 2); // combine this with line 154
 
-	imgDraggable(true);
+	imgMovable(true);
 }
 
 function fitNatural()
@@ -154,7 +154,7 @@ function fitNatural()
 	scrollTo((imgWidthFull() - docWidth()) / 2, (imgHeightFull() - docHeight()) / 2);
 
 	if (fitFitAvailable())
-		imgDraggable(true);
+		imgMovable(true);
 }
 
 function fit()
@@ -221,8 +221,8 @@ function onMouseDown(e)
 	move_offset_x = scrollX + e.screenX;
 	move_offset_y = scrollY + e.screenY;
 
-	window.onmouseup = onMouseUp;
-	window.onmousemove = onMouseMove;
+	document.onmouseup = onMouseUp;
+	document.onmousemove = onMouseMove;
 }
 
 function onMouseMove(e)
@@ -234,12 +234,42 @@ function onMouseMove(e)
 
 function onMouseUp()
 {
-	window.onmouseup = undefined;
-	window.onmousemove = undefined;
+	document.onmouseup = undefined;
+	document.onmousemove = undefined;
 }
 
+// Init
+img = document.getElementsByTagName("img")[0];
+
+// Clear
+document.addEventListener("click", (e) => e.stopPropagation(), true); // Disable default click event
+
+document.body.removeAttribute("style");
+
+img.removeAttribute("style");
+img.removeAttribute("width");
+img.removeAttribute("height");
+
+// 
+docRatio();
+imgRatio();
+
+img.className = "orientation-0";
+
+if (fitFitAvailable())
+	fitType(0);
+else
+	fitType(2);
+
 // Events
-window.onkeyup = function(e)
+window.onresize = function()
+{
+	docRatio();
+
+	fit();
+}
+
+document.onkeyup = function(e)
 {
 	switch (e.code)
 	{
@@ -260,31 +290,3 @@ window.onkeyup = function(e)
 		break;
 	}
 }
-
-window.onresize = function()
-{
-	docRatio();
-
-	fit();
-}
-
-// Init
-img = document.getElementsByTagName("img")[0];
-
-// Clear
-document.body.removeAttribute("style");
-
-img.removeAttribute("style");
-img.removeAttribute("width");
-img.removeAttribute("height");
-
-img.className = "orientation-0";
-
-// 
-docRatio();
-imgRatio();
-
-if (fitFitAvailable())
-	fitType(0);
-else
-	fitType(2);
