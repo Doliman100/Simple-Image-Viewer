@@ -1,4 +1,4 @@
-# Image Viewer
+# Simple Image Viewer
 Moving the image with the mouse.
 
 ### Shortcuts

@@ -1,6 +1,6 @@
 body {
-	background-color: initial !important;
 	user-select: none;
+	background-color: initial !important;
 }
 img[class] {
 	position: absolute;
@@ -8,6 +8,7 @@ img[class] {
 	bottom: 0px;
 	transform-origin: 0px 0px 0px;
 	cursor: initial !important;
+	margin: initial !important;
 }
 .orientation-0 {
 	transform: translateZ(0px);

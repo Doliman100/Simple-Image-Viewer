@@ -39,12 +39,12 @@ function docHeightFull()
 
 function docWidth()
 {
-	return isHigher() ? docWidthFull() - 17 : docWidthFull();
+	return isHigher() ? docWidthFull() - 17 / window.devicePixelRatio : docWidthFull();
 }
 
 function docHeight()
 {
-	return isWider() ? docHeightFull() - 17 : docHeightFull();
+	return isWider() ? docHeightFull() - 17 / window.devicePixelRatio : docHeightFull();
 }
 
 function docRatio()
@@ -101,9 +101,13 @@ function imgPos(x, y)
 function imgMovable(state)
 {
 	if (state)
+	{
 		document.onmousedown = onMouseDown;
+	}
 	else
+	{
 		document.onmousedown = undefined;
+	}
 }
 
 // Fit
@@ -115,17 +119,25 @@ function fitFitAvailable()
 function fitFillAvailable()
 {
 	if (ratioCompare())
+	{
 		return docHeight() < imgHeightFull() && docWidthFull() < Math.floor(imgWidthFull() * docHeight() / imgHeightFull());
+	}
 	else
+	{
 		return docWidth() < imgWidthFull() && docHeightFull() < Math.floor(imgHeightFull() * docWidth() / imgWidthFull());
+	}
 }
 
 function fitFit()
 {
 	if (ratioCompare())
+	{
 		imgSize(docWidthFull() + "px", "auto");
+	}
 	else
+	{
 		imgSize("auto", docHeightFull() + "px");
+	}
 
 	imgPos((docWidthFull() - imgWidth()) / 2, (docHeightFull() - imgHeight()) / 2);
 
@@ -135,13 +147,15 @@ function fitFit()
 function fitFill()
 {
 	if (ratioCompare())
+	{
 		imgSize("auto", docHeight() + "px");
+	}
 	else
+	{
 		imgSize(docWidth() + "px", "auto");
+	}
 
 	imgPos(0, 0);
-
-	scrollTo((imgWidth() - docWidthFull()) / 2, (imgHeight() - docHeightFull()) / 2); // combine this with line 154
 
 	imgMovable(true);
 }
@@ -151,10 +165,10 @@ function fitNatural()
 	imgSize("auto", "auto");
 	imgPos((docWidth() - imgWidthFull()) / 2, (docHeight() - imgHeightFull()) / 2);
 
-	scrollTo((imgWidthFull() - docWidth()) / 2, (imgHeightFull() - docHeight()) / 2);
-
 	if (fitFitAvailable())
+	{
 		imgMovable(true);
+	}
 }
 
 function fit()
@@ -163,20 +177,43 @@ function fit()
 	{
 	case 0:
 		fitFit();
+		
 		break;
+
 	case 1:
 		fitFill();
+
 		break;
+
 	case 2:
 		fitNatural();
+
 		break;
 	}
 }
 
-function fitUpdate() // try to do something with these two functions
+function scroll()
+{
+	switch (fit_type)
+	{
+	case 1:
+		scrollTo((imgWidth() - docWidthFull()) / 2, (imgHeight() - docHeightFull()) / 2);
+
+		break;
+
+	case 2:
+		scrollTo((imgWidthFull() - docWidth()) / 2, (imgHeightFull() - docHeight()) / 2);
+
+		break;
+	}
+}
+
+function fitUpdate()
 {
 	if (fit_type == 0 && fitFitAvailable() || fit_type == 1 && fitFillAvailable() || (fit_type = 2))
+	{
 		fit();
+	}
 }
 
 function fitType(n)
@@ -186,6 +223,7 @@ function fitType(n)
 		fit_type = n;
 
 		fit();
+		scroll();
 	}
 }
 
@@ -218,8 +256,8 @@ function rotateCCW()
 // Move
 function onMouseDown(e)
 {
-	move_offset_x = scrollX + e.screenX;
-	move_offset_y = scrollY + e.screenY;
+	move_offset_x = scrollX + e.clientX;
+	move_offset_y = scrollY + e.clientY;
 
 	document.onmouseup = onMouseUp;
 	document.onmousemove = onMouseMove;
@@ -227,7 +265,7 @@ function onMouseDown(e)
 
 function onMouseMove(e)
 {
-	scrollTo(move_offset_x - e.screenX, move_offset_y - e.screenY);
+	scrollTo(move_offset_x - e.clientX, move_offset_y - e.clientY);
 
 	return false;
 }
@@ -249,10 +287,7 @@ imgRatio();
 
 img.className = "orientation-0";
 
-if (fitFitAvailable())
-	fitType(0);
-else
-	fitType(2);
+fitType(fitFitAvailable() ? 0 : 2);
 
 // Events
 window.onresize = function()
@@ -264,22 +299,36 @@ window.onresize = function()
 
 document.onkeyup = function(e)
 {
-	switch (e.code)
+	if (!e.ctrlKey)
 	{
-	case "Digit1":
-		fitType(0);
-		break;
-	case "Digit2":
-		fitType(1);
-		break;
-	case "Digit3":
-		fitType(2);
-		break;
-	case "KeyR":
-		if (e.shiftKey)
-			rotateCCW();
-		else
-			rotateCW();
-		break;
+		switch (e.code)
+		{
+		case "Digit1":
+			fitType(0);
+
+			break;
+
+		case "Digit2":
+			fitType(1);
+
+			break;
+
+		case "Digit3":
+			fitType(2);
+
+			break;
+
+		case "KeyR":
+			if (e.shiftKey)
+			{
+				rotateCCW();
+			}
+			else
+			{
+				rotateCW();
+			}
+
+			break;
+		}
 	}
 }

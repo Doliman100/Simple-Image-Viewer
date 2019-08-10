@@ -1,3 +1,6 @@
 *.zip
 *.crx
+*.pem
 images/
+index.html
+readme.txt

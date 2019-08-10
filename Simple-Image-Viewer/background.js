@@ -11,7 +11,7 @@ function onHeadersReceived(details)
 	if (!tabs.has(details.tabId))
 		details.responseHeaders.some(function(header)
 		{
-			if (header.name.toLowerCase() === "content-type" && header.value.slice(0, 5) === "image")
+			if (header.name.toLowerCase() === "content-type" && /^image\/(jpeg|png|gif|x-icon|bmp|webp)$/.test(header.value))
 			{
 				tabs.add(details.tabId);
 
@@ -22,7 +22,7 @@ function onHeadersReceived(details)
 
 function onTabUpdated(_, changeInfo, tab)
 {
-	if (/^file:\/\/\/.+\.(jpg|png|gif|bmp|jpeg|webp)$/.test(tab.url) && changeInfo.status === "loading" || tabs.has(tab.id))
+	if (/^file:\/\/\/.+\.(jpe?g|png|gif|ico|bmp|webp|jfif|pjp(eg)?)$/.test(tab.url) && changeInfo.status === "loading" || tabs.has(tab.id))
 	{
 		// console.log(changeInfo, tab);
 
