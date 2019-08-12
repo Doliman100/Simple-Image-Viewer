@@ -11,7 +11,7 @@ function onHeadersReceived(details)
 	if (!tabs.has(details.tabId))
 		details.responseHeaders.some(function(header)
 		{
-			if (header.name.toLowerCase() === "content-type" && /^image\/(jpeg|png|gif|x-icon|bmp|webp)$/.test(header.value))
+			if (header.name.toLowerCase() === "content-type" && /^image\/(jpeg|png|gif|(x-|vnd\.microsoft\.)icon|bmp|webp)$/.test(header.value))
 			{
 				tabs.add(details.tabId);
 
