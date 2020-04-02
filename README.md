@@ -7,3 +7,6 @@ Moving the image with the mouse.
 * [1] - Fit
 * [2] - Fill
 * [3] - Natural
+
+### To do
+* Magnification to the cursor
