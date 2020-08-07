@@ -304,7 +304,7 @@ document.onkeyup = function(e)
 		switch (e.code)
 		{
 		case "Digit1":
-			fitType(0);
+			fitType(2);
 
 			break;
 
@@ -314,7 +314,7 @@ document.onkeyup = function(e)
 			break;
 
 		case "Digit3":
-			fitType(2);
+			fitType(0);
 
 			break;
 
