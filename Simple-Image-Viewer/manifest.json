@@ -7,7 +7,7 @@
   "content_scripts": [{
     "js": ["content.js"],
     "matches": ["<all_urls>"],
-    "run_at": "document_end"
+    "run_at": "document_start"
   }],
   "description": "Default image viewer with advanced functionality: rotating, fitting, moving.",
   "homepage_url": "https://github.com/Doliman100/Simple-Image-Viewer",

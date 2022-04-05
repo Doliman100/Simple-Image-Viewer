@@ -1,12 +1,7 @@
-img[class] {
+img {
+  background-color: hsl(0, 0%, 25%);
   position: absolute;
-  left: 0px;
-  top: 0px;
-  right: 0px;
-  bottom: 0px;
   transform-origin: 0px 0px 0px;
-  cursor: initial !important;
-  margin: initial !important;
 }
 .orientation-0 {
   transform: translateZ(0px);

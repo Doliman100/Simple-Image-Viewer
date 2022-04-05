@@ -45,11 +45,11 @@ function calcDocRatio() {
 
 // Image
 function imgWidthFull() {
-  return imgOriginal ? img.naturalWidth : img.naturalHeight;
+  return imgOriginal ? imgNaturalWidth : imgNaturalHeight;
 }
 
 function imgHeightFull() {
-  return imgOriginal ? img.naturalHeight : img.naturalWidth;
+  return imgOriginal ? imgNaturalHeight : imgNaturalWidth;
 }
 
 function imgWidth() {
@@ -224,11 +224,13 @@ function onMouseUp() {
   document.onmousemove = undefined;
 }
 
-// Disable default click event
-document.addEventListener('click', (e) => e.stopPropagation(), true);
-
 // Init
-const img = document.body.firstChild;
+const imgNative = document.body.firstChild;
+const imgNaturalWidth = imgNative.naturalWidth;
+const imgNaturalHeight = imgNative.naturalHeight;
+const img = new Image(imgNaturalWidth, imgNaturalHeight);
+img.src = imgNative.src;
+document.body.replaceChild(img, imgNative);
 
 calcDocRatio();
 calcImgRatio();
@@ -238,13 +240,13 @@ img.className = 'orientation-0';
 applyFit(fitFitAvailable() ? 0 : 2);
 
 // Events
-window.onresize = function() {
+window.addEventListener('resize', (e) => {
   calcDocRatio();
 
   fitUpdate();
-};
+});
 
-document.onkeyup = function(e) {
+window.addEventListener('keyup', (e) => {
   if (!e.ctrlKey) {
     switch (e.code) {
       case 'Digit1':
@@ -272,4 +274,4 @@ document.onkeyup = function(e) {
         break;
     }
   }
-};
+});
