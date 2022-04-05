@@ -1,20 +1,19 @@
 {
   "background": {
-    "scripts": [
-      "background.js"
-    ]
+    "persistent": false,
+    "scripts": ["background.js"]
   },
   "browser_action": {},
+  "content_scripts": [{
+    "js": ["content.js"],
+    "matches": ["<all_urls>"],
+    "run_at": "document_end"
+  }],
   "description": "Default image viewer with advanced functionality: rotating, fitting, moving.",
   "homepage_url": "https://github.com/Doliman100/Simple-Image-Viewer",
   "manifest_version": 2,
   "name": "Simple Image Viewer",
-  "permissions": [
-    "file://*/*",
-    "http://*/*",
-    "https://*/*",
-    "tabs",
-    "webRequest"
-  ],
-  "version": "1.0.3"
+  "permissions": ["management"],
+  "version": "1.0.3",
+  "web_accessible_resources": ["script.js", "style.css"]
 }
