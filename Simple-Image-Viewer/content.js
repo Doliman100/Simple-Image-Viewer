@@ -1,334 +1,275 @@
-let doc_ratio;
+let docRatio;
 
-let img;
-let img_ratio;
-let img_original = true; // is angle 0 or 180 degrees
-let img_orientation = 0; // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
+let imgRatio;
+let imgOriginal = true; // is angle 0 or 180 degrees
+let imgOrientation = 0; // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
 
-let fit_type; // 0 = fit, 1 = fill, 2 = natural
+let fitType; // 0 = fit, 1 = fill, 2 = natural
 
-let move_offset_x;
-let move_offset_y;
+let moveOffsetX;
+let moveOffsetY;
 
 // Compare
-function isWider()
-{
-	return docWidthFull() < imgWidthFull();
+function isWider() {
+  return docWidthFull() < imgWidthFull();
 }
 
-function isHigher()
-{
-	return docHeightFull() < imgHeightFull();
+function isHigher() {
+  return docHeightFull() < imgHeightFull();
 }
 
-function ratioCompare()
-{
-	return doc_ratio < img_ratio;
+function ratioCompare() {
+  return docRatio < imgRatio;
 }
 
 // Document
-function docWidthFull()
-{
-	return window.innerWidth;
+function docWidthFull() {
+  return window.innerWidth;
 }
 
-function docHeightFull()
-{
-	return window.innerHeight;
+function docHeightFull() {
+  return window.innerHeight;
 }
 
-function docWidth()
-{
-	return isHigher() ? docWidthFull() - 17 / window.devicePixelRatio : docWidthFull();
+function docWidth() {
+  return isHigher() ? docWidthFull() - 17 / window.devicePixelRatio : docWidthFull();
 }
 
-function docHeight()
-{
-	return isWider() ? docHeightFull() - 17 / window.devicePixelRatio : docHeightFull();
+function docHeight() {
+  return isWider() ? docHeightFull() - 17 / window.devicePixelRatio : docHeightFull();
 }
 
-function docRatio()
-{
-	doc_ratio = docWidthFull() / docHeightFull();
+function calcDocRatio() {
+  docRatio = docWidthFull() / docHeightFull();
 }
 
 // Image
-function imgWidthFull()
-{
-	return img_original ? img.naturalWidth : img.naturalHeight;
+function imgWidthFull() {
+  return imgOriginal ? img.naturalWidth : img.naturalHeight;
 }
 
-function imgHeightFull()
-{
-	return img_original ? img.naturalHeight : img.naturalWidth;
+function imgHeightFull() {
+  return imgOriginal ? img.naturalHeight : img.naturalWidth;
 }
 
-function imgWidth()
-{
-	return img_original ? img.scrollWidth : img.scrollHeight;
+function imgWidth() {
+  return imgOriginal ? img.scrollWidth : img.scrollHeight;
 }
 
-function imgHeight()
-{
-	return img_original ? img.scrollHeight : img.scrollWidth;
+function imgHeight() {
+  return imgOriginal ? img.scrollHeight : img.scrollWidth;
 }
 
-function imgRatio()
-{
-	img_ratio = imgWidthFull() / imgHeightFull();
+function calcImgRatio() {
+  imgRatio = imgWidthFull() / imgHeightFull();
 }
 
-function imgSize(w, h)
-{
-	if (img_original)
-	{
-		img.style.width = w;
-		img.style.height = h;
-	}
-	else
-	{
-		img.style.width = h;
-		img.style.height = w;
-	}
+function imgSize(w, h) {
+  if (imgOriginal) {
+    img.style.width = w;
+    img.style.height = h;
+  } else {
+    img.style.width = h;
+    img.style.height = w;
+  }
 }
 
-function imgPos(x, y)
-{
-	img.style.left = Math.max(x, 0) + "px";
-	img.style.top = Math.max(y, 0) + "px";
+function imgPos(x, y) {
+  img.style.left = Math.max(x, 0) + 'px';
+  img.style.top = Math.max(y, 0) + 'px';
 }
 
-function imgMovable(state)
-{
-	if (state)
-	{
-		document.onmousedown = onMouseDown;
-	}
-	else
-	{
-		document.onmousedown = undefined;
-	}
+function imgMovable(state) {
+  if (state) {
+    document.onmousedown = onMouseDown;
+  } else {
+    document.onmousedown = undefined;
+  }
 }
 
 // Fit
-function fitFitAvailable()
-{
-	return isWider() || isHigher();
+function fitFitAvailable() {
+  return isWider() || isHigher();
 }
 
-function fitFillAvailable()
-{
-	if (ratioCompare())
-	{
-		return docHeight() < imgHeightFull() && docWidthFull() < Math.floor(imgWidthFull() * docHeight() / imgHeightFull());
-	}
-	else
-	{
-		return docWidth() < imgWidthFull() && docHeightFull() < Math.floor(imgHeightFull() * docWidth() / imgWidthFull());
-	}
+function fitFillAvailable() {
+  if (ratioCompare()) {
+    return docHeight() < imgHeightFull() && docWidthFull() < Math.floor(imgWidthFull() * docHeight() / imgHeightFull());
+  } else {
+    return docWidth() < imgWidthFull() && docHeightFull() < Math.floor(imgHeightFull() * docWidth() / imgWidthFull());
+  }
 }
 
-function fitFit()
-{
-	if (ratioCompare())
-	{
-		imgSize(docWidthFull() + "px", "auto");
-	}
-	else
-	{
-		imgSize("auto", docHeightFull() + "px");
-	}
+function fitFit() {
+  if (ratioCompare()) {
+    imgSize(docWidthFull() + 'px', 'auto');
+  } else {
+    imgSize('auto', docHeightFull() + 'px');
+  }
 
-	imgPos((docWidthFull() - imgWidth()) / 2, (docHeightFull() - imgHeight()) / 2);
+  imgPos((docWidthFull() - imgWidth()) / 2, (docHeightFull() - imgHeight()) / 2);
 
-	imgMovable(false);
+  imgMovable(false);
 }
 
-function fitFill()
-{
-	if (ratioCompare())
-	{
-		imgSize("auto", docHeight() + "px");
-	}
-	else
-	{
-		imgSize(docWidth() + "px", "auto");
-	}
+function fitFill() {
+  if (ratioCompare()) {
+    imgSize('auto', docHeight() + 'px');
+  } else {
+    imgSize(docWidth() + 'px', 'auto');
+  }
 
-	imgPos(0, 0);
+  imgPos(0, 0);
 
-	imgMovable(true);
+  imgMovable(true);
 }
 
-function fitNatural()
-{
-	imgSize("auto", "auto");
-	imgPos((docWidth() - imgWidthFull()) / 2, (docHeight() - imgHeightFull()) / 2);
+function fitNatural() {
+  imgSize('auto', 'auto');
+  imgPos((docWidth() - imgWidthFull()) / 2, (docHeight() - imgHeightFull()) / 2);
 
-	if (fitFitAvailable())
-	{
-		imgMovable(true);
-	}
+  if (fitFitAvailable()) {
+    imgMovable(true);
+  }
 }
 
-function fit()
-{
-	switch (fit_type)
-	{
-	case 0:
-		fitFit();
-		
-		break;
+function fit() {
+  switch (fitType) {
+    case 0:
+      fitFit();
 
-	case 1:
-		fitFill();
+      break;
 
-		break;
+    case 1:
+      fitFill();
 
-	case 2:
-		fitNatural();
+      break;
 
-		break;
-	}
+    case 2:
+      fitNatural();
+
+      break;
+  }
 }
 
-function scroll()
-{
-	switch (fit_type)
-	{
-	case 1:
-		scrollTo((imgWidth() - docWidthFull()) / 2, (imgHeight() - docHeightFull()) / 2);
+function scroll() {
+  switch (fitType) {
+    case 1:
+      scrollTo((imgWidth() - docWidthFull()) / 2, (imgHeight() - docHeightFull()) / 2);
 
-		break;
+      break;
 
-	case 2:
-		scrollTo((imgWidthFull() - docWidth()) / 2, (imgHeightFull() - docHeight()) / 2);
+    case 2:
+      scrollTo((imgWidthFull() - docWidth()) / 2, (imgHeightFull() - docHeight()) / 2);
 
-		break;
-	}
+      break;
+  }
 }
 
-function fitUpdate()
-{
-	if (fit_type == 0 && fitFitAvailable() || fit_type == 1 && fitFillAvailable() || (fit_type = 2))
-	{
-		fit();
-	}
+function fitUpdate() {
+  if (fitType == 0 && fitFitAvailable() || fitType == 1 && fitFillAvailable() || (fitType = 2)) {
+    fit();
+  }
 }
 
-function fitType(n)
-{
-	if (fit_type != n && (n == 0 && fitFitAvailable() || n == 1 && fitFillAvailable() || n == 2))
-	{
-		fit_type = n;
+function applyFit(n) {
+  if (fitType != n && (n == 0 && fitFitAvailable() || n == 1 && fitFillAvailable() || n == 2)) {
+    fitType = n;
 
-		fit();
-		scroll();
-	}
+    fit();
+    scroll();
+  }
 }
 
 // Rotate
-function rotate()
-{
-	img.className = "orientation-" + img_orientation;
+function rotate() {
+  img.className = 'orientation-' + imgOrientation;
 
-	img_original = !img_original; // img_orientation % 2
+  imgOriginal = !imgOriginal; // img_orientation % 2
 
-	imgRatio();
+  calcImgRatio();
 
-	fitUpdate();
+  fitUpdate();
 }
 
-function rotateCW()
-{
-	img_orientation = (img_orientation + 1) % 4;
+function rotateCW() {
+  imgOrientation = (imgOrientation + 1) % 4;
 
-	rotate();
+  rotate();
 }
 
-function rotateCCW()
-{
-	img_orientation = (img_orientation + 3) % 4;
+function rotateCCW() {
+  imgOrientation = (imgOrientation + 3) % 4;
 
-	rotate();
+  rotate();
 }
 
 // Move
-function onMouseDown(e)
-{
-	move_offset_x = scrollX + e.clientX;
-	move_offset_y = scrollY + e.clientY;
+function onMouseDown(e) {
+  moveOffsetX = scrollX + e.clientX;
+  moveOffsetY = scrollY + e.clientY;
 
-	document.onmouseup = onMouseUp;
-	document.onmousemove = onMouseMove;
+  document.onmouseup = onMouseUp;
+  document.onmousemove = onMouseMove;
 }
 
-function onMouseMove(e)
-{
-	scrollTo(move_offset_x - e.clientX, move_offset_y - e.clientY);
+function onMouseMove(e) {
+  scrollTo(moveOffsetX - e.clientX, moveOffsetY - e.clientY);
 
-	return false;
+  return false;
 }
 
-function onMouseUp()
-{
-	document.onmouseup = undefined;
-	document.onmousemove = undefined;
+function onMouseUp() {
+  document.onmouseup = undefined;
+  document.onmousemove = undefined;
 }
 
 // Disable default click event
-document.addEventListener("click", (e) => e.stopPropagation(), true);
+document.addEventListener('click', (e) => e.stopPropagation(), true);
 
 // Init
-img = document.body.firstChild;
+const img = document.body.firstChild;
 
-docRatio();
-imgRatio();
+calcDocRatio();
+calcImgRatio();
 
-img.className = "orientation-0";
+img.className = 'orientation-0';
 
-fitType(fitFitAvailable() ? 0 : 2);
+applyFit(fitFitAvailable() ? 0 : 2);
 
 // Events
-window.onresize = function()
-{
-	docRatio();
+window.onresize = function() {
+  calcDocRatio();
 
-	fitUpdate();
-}
+  fitUpdate();
+};
 
-document.onkeyup = function(e)
-{
-	if (!e.ctrlKey)
-	{
-		switch (e.code)
-		{
-		case "Digit1":
-			fitType(2);
+document.onkeyup = function(e) {
+  if (!e.ctrlKey) {
+    switch (e.code) {
+      case 'Digit1':
+        applyFit(2);
 
-			break;
+        break;
 
-		case "Digit2":
-			fitType(1);
+      case 'Digit2':
+        applyFit(1);
 
-			break;
+        break;
 
-		case "Digit3":
-			fitType(0);
+      case 'Digit3':
+        applyFit(0);
 
-			break;
+        break;
 
-		case "KeyR":
-			if (e.shiftKey)
-			{
-				rotateCCW();
-			}
-			else
-			{
-				rotateCW();
-			}
+      case 'KeyR':
+        if (e.shiftKey) {
+          rotateCCW();
+        } else {
+          rotateCW();
+        }
 
-			break;
-		}
-	}
-}
+        break;
+    }
+  }
+};

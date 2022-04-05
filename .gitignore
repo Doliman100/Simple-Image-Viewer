@@ -1,5 +1,5 @@
-*.zip
+.vscode/
+node_modules/
+*.crx
 *.pem
-images/
-index.html
-readme.txt
+*.zip
