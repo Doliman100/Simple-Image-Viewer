@@ -30,3 +30,15 @@ function onTabUpdated(_, changeInfo, tab) {
 chrome.webRequest.onHeadersReceived.addListener(onHeadersReceived, {types: ['main_frame'], urls: ['http://*/*', 'https://*/*']}, ['responseHeaders']);
 
 chrome.tabs.onUpdated.addListener(onTabUpdated);
+
+chrome.browserAction.onClicked.addListener(() => chrome.tabs.create({url: `chrome://extensions/?id=${chrome.runtime.id}`}));
+
+chrome.extension.isAllowedFileSchemeAccess((hasAccess) => {
+  if (hasAccess) {
+    chrome.browserAction.disable();
+  } else {
+    chrome.browserAction.setTitle({title: 'No access to file URLs'});
+    chrome.browserAction.setBadgeBackgroundColor({color: '#fbbc04'});
+    chrome.browserAction.setBadgeText({text: '!'});
+  }
+});

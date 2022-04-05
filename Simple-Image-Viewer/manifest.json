@@ -4,6 +4,7 @@
       "background.js"
     ]
   },
+  "browser_action": {},
   "description": "Default image viewer with advanced functionality: rotating, fitting, moving.",
   "homepage_url": "https://github.com/Doliman100/Simple-Image-Viewer",
   "manifest_version": 2,
