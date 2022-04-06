@@ -5,6 +5,7 @@ chrome.browserAction.onClicked.addListener(() => chrome.tabs.create({url: `chrom
 function init() {
   chrome.extension.isAllowedFileSchemeAccess((hasAccess) => {
     if (hasAccess) {
+      chrome.browserAction.setBadgeText({text: ''});
       chrome.browserAction.disable();
     } else {
       chrome.browserAction.setTitle({title: 'No access to file URLs'});
