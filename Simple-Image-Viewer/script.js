@@ -1,8 +1,6 @@
-let docRatio;
+'use strict';
 
-let imgRatio;
-let imgOriginal = true; // is angle 0 or 180 degrees
-let imgOrientation = 0; // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
+const scrollbarThickness = 17 / window.devicePixelRatio;
 
 let fitType; // 0 = fit, 1 = fill, 2 = natural
 
@@ -11,73 +9,83 @@ let moveOffsetY;
 
 // Compare
 function isWider() {
-  return docWidthFull() < imgWidthFull();
+  return doc.widthFull < img.widthFull;
 }
 
 function isHigher() {
-  return docHeightFull() < imgHeightFull();
+  return doc.heightFull < img.heightFull;
 }
 
 function ratioCompare() {
-  return docRatio < imgRatio;
+  return doc.ratio < img.ratio;
 }
 
 // Document
-function docWidthFull() {
-  return window.innerWidth;
-}
-
-function docHeightFull() {
-  return window.innerHeight;
-}
-
-function docWidth() {
-  return isHigher() ? docWidthFull() - 17 / window.devicePixelRatio : docWidthFull();
-}
-
-function docHeight() {
-  return isWider() ? docHeightFull() - 17 / window.devicePixelRatio : docHeightFull();
-}
-
-function calcDocRatio() {
-  docRatio = docWidthFull() / docHeightFull();
-}
+const doc = {
+  get widthFull() {
+    return window.innerWidth;
+  },
+  get heightFull() {
+    return window.innerHeight;
+  },
+  get width() {
+    return isHigher() ? this.widthFull - scrollbarThickness : this.widthFull;
+  },
+  get height() {
+    return isWider() ? this.heightFull - scrollbarThickness : this.heightFull;
+  },
+  get ratio() {
+    return this.widthFull / this.heightFull;
+  },
+};
 
 // Image
-function imgWidthFull() {
-  return imgOriginal ? imgNaturalWidth : imgNaturalHeight;
-}
+const img = {
+  horizontal: true, // is angle 0 or 180 degrees (angle / 180)
+  orientation: 0, // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
 
-function imgHeightFull() {
-  return imgOriginal ? imgNaturalHeight : imgNaturalWidth;
-}
+  width_: undefined,
+  height_: undefined,
+  node: undefined,
 
-function imgWidth() {
-  return imgOriginal ? img.scrollWidth : img.scrollHeight;
-}
+  get widthFull() {
+    return this.horizontal ? this.width_ : this.height_;
+  },
+  get heightFull() {
+    return this.horizontal ? this.height_ : this.width_;
+  },
 
-function imgHeight() {
-  return imgOriginal ? img.scrollHeight : img.scrollWidth;
-}
+  get width() {
+    return this.horizontal ? this.node.scrollWidth : this.node.scrollHeight;
+  },
+  set width(value) {
+    if (this.horizontal) {
+      this.node.style.width = value;
+    } else {
+      this.node.style.height = value;
+    }
+  },
+  get height() {
+    return this.horizontal ? this.node.scrollHeight : this.node.scrollWidth;
+  },
+  set height(value) {
+    if (this.horizontal) {
+      this.node.style.height = value;
+    } else {
+      this.node.style.width = value;
+    }
+  },
+  get ratio() {
+    return this.widthFull / this.heightFull;
+  },
 
-function calcImgRatio() {
-  imgRatio = imgWidthFull() / imgHeightFull();
-}
-
-function imgSize(w, h) {
-  if (imgOriginal) {
-    img.style.width = w;
-    img.style.height = h;
-  } else {
-    img.style.width = h;
-    img.style.height = w;
-  }
-}
-
-function imgPos(x, y) {
-  img.style.left = Math.max(x, 0) + 'px';
-  img.style.top = Math.max(y, 0) + 'px';
-}
+  set x(value) {
+    this.node.style.left = Math.max(value, 0) + 'px';
+  },
+  set y(value) {
+    this.node.style.top = Math.max(value, 0) + 'px';
+  },
+};
 
 function imgMovable(state) {
   if (state) {
@@ -94,39 +102,45 @@ function fitFitAvailable() {
 
 function fitFillAvailable() {
   if (ratioCompare()) {
-    return docHeight() < imgHeightFull() && docWidthFull() < Math.floor(imgWidthFull() * docHeight() / imgHeightFull());
+    return doc.height < img.heightFull && doc.widthFull < Math.floor(img.widthFull * doc.height / img.heightFull);
   } else {
-    return docWidth() < imgWidthFull() && docHeightFull() < Math.floor(imgHeightFull() * docWidth() / imgWidthFull());
+    return doc.width < img.widthFull && doc.heightFull < Math.floor(img.heightFull * doc.width / img.widthFull);
   }
 }
 
 function fitFit() {
   if (ratioCompare()) {
-    imgSize(docWidthFull() + 'px', 'auto');
+    img.width = doc.widthFull + 'px';
+    img.height = 'auto';
   } else {
-    imgSize('auto', docHeightFull() + 'px');
+    img.width = 'auto';
+    img.height = doc.heightFull + 'px';
   }
-
-  imgPos((docWidthFull() - imgWidth()) / 2, (docHeightFull() - imgHeight()) / 2);
+  img.x = (doc.widthFull - img.width) / 2;
+  img.y = (doc.heightFull - img.height) / 2;
 
   imgMovable(false);
 }
 
 function fitFill() {
   if (ratioCompare()) {
-    imgSize('auto', docHeight() + 'px');
+    img.width = 'auto';
+    img.height = doc.height + 'px';
   } else {
-    imgSize(docWidth() + 'px', 'auto');
+    img.width = doc.width + 'px';
+    img.height = 'auto';
   }
-
-  imgPos(0, 0);
+  img.x = 0;
+  img.y = 0;
 
   imgMovable(true);
 }
 
 function fitNatural() {
-  imgSize('auto', 'auto');
-  imgPos((docWidth() - imgWidthFull()) / 2, (docHeight() - imgHeightFull()) / 2);
+  img.width = 'auto';
+  img.height = 'auto';
+  img.x = (doc.width - img.widthFull) / 2;
+  img.y = (doc.height - img.heightFull) / 2;
 
   if (fitFitAvailable()) {
     imgMovable(true);
@@ -155,12 +169,12 @@ function fit() {
 function scroll() {
   switch (fitType) {
     case 1:
-      scrollTo((imgWidth() - docWidthFull()) / 2, (imgHeight() - docHeightFull()) / 2);
+      scrollTo((img.width - doc.widthFull) / 2, (img.height - doc.heightFull) / 2);
 
       break;
 
     case 2:
-      scrollTo((imgWidthFull() - docWidth()) / 2, (imgHeightFull() - docHeight()) / 2);
+      scrollTo((img.widthFull - doc.width) / 2, (img.heightFull - doc.height) / 2);
 
       break;
   }
@@ -183,23 +197,21 @@ function applyFit(n) {
 
 // Rotate
 function rotate() {
-  img.className = 'orientation-' + imgOrientation;
+  img.node.className = 'orientation-' + img.orientation;
 
-  imgOriginal = !imgOriginal; // img_orientation % 2
-
-  calcImgRatio();
+  img.horizontal = !img.horizontal; // img.orientation % 2
 
   fitUpdate();
 }
 
 function rotateCW() {
-  imgOrientation = (imgOrientation + 1) % 4;
+  img.orientation = (img.orientation + 1) % 4;
 
   rotate();
 }
 
 function rotateCCW() {
-  imgOrientation = (imgOrientation + 3) % 4;
+  img.orientation = (img.orientation + 3) % 4;
 
   rotate();
 }
@@ -225,26 +237,18 @@ function onMouseUp() {
 }
 
 // Init
-const imgNative = document.body.firstChild;
-const imgNaturalWidth = imgNative.naturalWidth;
-const imgNaturalHeight = imgNative.naturalHeight;
-const img = new Image(imgNaturalWidth, imgNaturalHeight);
-img.src = imgNative.src;
-document.body.replaceChild(img, imgNative);
-
-calcDocRatio();
-calcImgRatio();
-
-img.className = 'orientation-0';
+const imgNative = document.body.firstChild; // img_element_
+img.width_ = imgNative.naturalWidth;
+img.height_ = imgNative.naturalHeight;
+img.node = new Image(img.width_, img.height_);
+img.node.src = imgNative.src;
+img.node.className = 'orientation-0';
+document.body.replaceChild(img.node, imgNative);
 
 applyFit(fitFitAvailable() ? 0 : 2);
 
 // Events
-window.addEventListener('resize', (e) => {
-  calcDocRatio();
-
-  fitUpdate();
-});
+window.addEventListener('resize', fitUpdate);
 
 window.addEventListener('keyup', (e) => {
   if (!e.ctrlKey) {
