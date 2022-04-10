@@ -9,11 +9,11 @@ let moveOffsetY;
 
 // Compare
 function isWider() {
-  return doc.widthFull < img.widthFull;
+  return doc.fullWidth < img.fullWidth;
 }
 
 function isHigher() {
-  return doc.heightFull < img.heightFull;
+  return doc.fullHeight < img.fullHeight;
 }
 
 function ratioCompare() {
@@ -21,26 +21,26 @@ function ratioCompare() {
 }
 
 // Document
-const doc = {
-  get widthFull() {
+const doc = Object.seal({
+  get fullWidth() {
     return window.innerWidth;
   },
-  get heightFull() {
+  get fullHeight() {
     return window.innerHeight;
   },
   get width() {
-    return isHigher() ? this.widthFull - scrollbarThickness : this.widthFull;
+    return isHigher() ? this.fullWidth - scrollbarThickness : this.fullWidth;
   },
   get height() {
-    return isWider() ? this.heightFull - scrollbarThickness : this.heightFull;
+    return isWider() ? this.fullHeight - scrollbarThickness : this.fullHeight;
   },
   get ratio() {
-    return this.widthFull / this.heightFull;
+    return this.fullWidth / this.fullHeight;
   },
-};
+});
 
 // Image
-const img = {
+const img = Object.seal({
   horizontal: true, // is angle 0 or 180 degrees (angle / 180)
   orientation: 0, // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
 
@@ -48,10 +48,10 @@ const img = {
   height_: undefined,
   node: undefined,
 
-  get widthFull() {
+  get fullWidth() {
     return this.horizontal ? this.width_ : this.height_;
   },
-  get heightFull() {
+  get fullHeight() {
     return this.horizontal ? this.height_ : this.width_;
   },
 
@@ -76,16 +76,16 @@ const img = {
     }
   },
   get ratio() {
-    return this.widthFull / this.heightFull;
+    return this.fullWidth / this.fullHeight;
   },
 
   set x(value) {
-    this.node.style.left = Math.max(value, 0) + 'px';
+    this.node.style.left = `${Math.max(value, 0)}px`;
   },
   set y(value) {
-    this.node.style.top = Math.max(value, 0) + 'px';
+    this.node.style.top = `${Math.max(value, 0)}px`;
   },
-};
+});
 
 function imgMovable(state) {
   if (state) {
@@ -102,22 +102,22 @@ function fitFitAvailable() {
 
 function fitFillAvailable() {
   if (ratioCompare()) {
-    return doc.height < img.heightFull && doc.widthFull < Math.floor(img.widthFull * doc.height / img.heightFull);
+    return doc.height < img.fullHeight && doc.fullWidth < Math.floor(img.fullWidth * doc.height / img.fullHeight);
   } else {
-    return doc.width < img.widthFull && doc.heightFull < Math.floor(img.heightFull * doc.width / img.widthFull);
+    return doc.width < img.fullWidth && doc.fullHeight < Math.floor(img.fullHeight * doc.width / img.fullWidth);
   }
 }
 
 function fitFit() {
   if (ratioCompare()) {
-    img.width = doc.widthFull + 'px';
+    img.width = `${doc.fullWidth}px`;
     img.height = 'auto';
   } else {
     img.width = 'auto';
-    img.height = doc.heightFull + 'px';
+    img.height = `${doc.fullHeight}px`;
   }
-  img.x = (doc.widthFull - img.width) / 2;
-  img.y = (doc.heightFull - img.height) / 2;
+  img.x = (doc.fullWidth - img.width) / 2;
+  img.y = (doc.fullHeight - img.height) / 2;
 
   imgMovable(false);
 }
@@ -125,9 +125,9 @@ function fitFit() {
 function fitFill() {
   if (ratioCompare()) {
     img.width = 'auto';
-    img.height = doc.height + 'px';
+    img.height = `${doc.height}px`;
   } else {
-    img.width = doc.width + 'px';
+    img.width = `${doc.width}px`;
     img.height = 'auto';
   }
   img.x = 0;
@@ -139,8 +139,8 @@ function fitFill() {
 function fitNatural() {
   img.width = 'auto';
   img.height = 'auto';
-  img.x = (doc.width - img.widthFull) / 2;
-  img.y = (doc.height - img.heightFull) / 2;
+  img.x = (doc.width - img.fullWidth) / 2;
+  img.y = (doc.height - img.fullHeight) / 2;
 
   if (fitFitAvailable()) {
     imgMovable(true);
@@ -169,12 +169,12 @@ function fit() {
 function scroll() {
   switch (fitType) {
     case 1:
-      scrollTo((img.width - doc.widthFull) / 2, (img.height - doc.heightFull) / 2);
+      scrollTo((img.width - doc.fullWidth) / 2, (img.height - doc.fullHeight) / 2);
 
       break;
 
     case 2:
-      scrollTo((img.widthFull - doc.width) / 2, (img.heightFull - doc.height) / 2);
+      scrollTo((img.fullWidth - doc.width) / 2, (img.fullHeight - doc.height) / 2);
 
       break;
   }
@@ -197,7 +197,7 @@ function applyFit(n) {
 
 // Rotate
 function rotate() {
-  img.node.className = 'orientation-' + img.orientation;
+  img.node.className = `orientation-${img.orientation}`;
 
   img.horizontal = !img.horizontal; // img.orientation % 2
 
