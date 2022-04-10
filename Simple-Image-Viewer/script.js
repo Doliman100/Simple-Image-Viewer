@@ -44,15 +44,13 @@ const img = Object.seal({
   horizontal: true, // is angle 0 or 180 degrees (angle / 180)
   orientation: 0, // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
 
-  width_: undefined,
-  height_: undefined,
   node: undefined,
 
   get fullWidth() {
-    return this.horizontal ? this.width_ : this.height_;
+    return this.horizontal ? this.node.naturalWidth : this.node.naturalHeight;
   },
   get fullHeight() {
-    return this.horizontal ? this.height_ : this.width_;
+    return this.horizontal ? this.node.naturalHeight : this.node.naturalWidth;
   },
 
   get width() {
@@ -237,18 +235,26 @@ function onMouseUp() {
 }
 
 // Init
-const imgNative = document.body.firstChild; // img_element_
-img.width_ = imgNative.naturalWidth;
-img.height_ = imgNative.naturalHeight;
-img.node = new Image(img.width_, img.height_);
-img.node.src = imgNative.src;
-img.node.className = 'orientation-0';
-document.body.replaceChild(img.node, imgNative);
+function undoDefault() {
+  img.node.style.margin = '';
+  img.node.style.cursor = '';
+  img.node.width = img.node.naturalWidth;
+  img.node.height = img.node.naturalHeight;
 
+  fitUpdate();
+}
+
+// img_element_
+img.node = document.body.firstChild;
+img.node.className = 'orientation-0';
+img.node.addEventListener('click', (e) => e.stopPropagation(), true);
+
+undoDefault();
 applyFit(fitFitAvailable() ? 0 : 2);
 
 // Events
-window.addEventListener('resize', fitUpdate);
+window.addEventListener('DOMContentLoaded', undoDefault);
+window.addEventListener('resize', undoDefault);
 
 window.addEventListener('keyup', (e) => {
   if (!e.ctrlKey) {
