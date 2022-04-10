@@ -244,17 +244,38 @@ function undoDefault() {
   fitUpdate();
 }
 
-// img_element_
-img.node = document.body.firstChild;
-img.node.className = 'orientation-0';
-img.node.addEventListener('click', (e) => e.stopPropagation(), true);
+// load style sync
+const xhr = new XMLHttpRequest();
+xhr.open('GET', chrome.runtime.getURL('style.css'), false);
+xhr.send();
 
-undoDefault();
-applyFit(fitFitAvailable() ? 0 : 2);
+// insert style sync
+const sheet = new CSSStyleSheet();
+sheet.replaceSync(xhr.responseText);
+document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+
+const observer = new MutationObserver(() => {
+  if (document.body) {
+    // img_element_
+    img.node = document.body.firstChild;
+    img.node.className = 'orientation-0';
+    img.node.addEventListener('click', (e) => e.stopPropagation(), true);
+
+    undoDefault();
+    applyFit(fitFitAvailable() ? 0 : 2);
+
+    observer.disconnect();
+  }
+});
+observer.observe(document.documentElement, {childList: true});
 
 // Events
 window.addEventListener('DOMContentLoaded', undoDefault);
-window.addEventListener('resize', undoDefault);
+window.addEventListener('resize', (e) => {
+  fitUpdate();
+
+  e.stopImmediatePropagation();
+});
 
 window.addEventListener('keyup', (e) => {
   if (!e.ctrlKey) {
