@@ -58,9 +58,9 @@ const img = Object.seal({
   },
   set width(value) {
     if (this.horizontal) {
-      this.node.style.width = value;
+      this.node.style.width = `${value}px`;
     } else {
-      this.node.style.height = value;
+      this.node.style.height = `${value}px`;
     }
   },
   get height() {
@@ -68,9 +68,9 @@ const img = Object.seal({
   },
   set height(value) {
     if (this.horizontal) {
-      this.node.style.height = value;
+      this.node.style.height = `${value}px`;
     } else {
-      this.node.style.width = value;
+      this.node.style.width = `${value}px`;
     }
   },
   get ratio() {
@@ -108,11 +108,11 @@ function fitFillAvailable() {
 
 function fitFit() {
   if (ratioCompare()) {
-    img.width = `${doc.fullWidth}px`;
-    img.height = 'auto';
+    img.width = doc.fullWidth;
+    img.height = img.width / img.ratio;
   } else {
-    img.width = 'auto';
-    img.height = `${doc.fullHeight}px`;
+    img.height = doc.fullHeight;
+    img.width = img.height * img.ratio;
   }
   img.x = (doc.fullWidth - img.width) / 2;
   img.y = (doc.fullHeight - img.height) / 2;
@@ -122,11 +122,11 @@ function fitFit() {
 
 function fitFill() {
   if (ratioCompare()) {
-    img.width = 'auto';
-    img.height = `${doc.height}px`;
+    img.height = doc.height;
+    img.width = img.height * img.ratio;
   } else {
-    img.width = `${doc.width}px`;
-    img.height = 'auto';
+    img.width = doc.width;
+    img.height = img.width / img.ratio;
   }
   img.x = 0;
   img.y = 0;
@@ -135,10 +135,10 @@ function fitFill() {
 }
 
 function fitNatural() {
-  img.width = 'auto';
-  img.height = 'auto';
-  img.x = (doc.width - img.fullWidth) / 2;
-  img.y = (doc.height - img.fullHeight) / 2;
+  img.width = img.fullWidth;
+  img.height = img.fullHeight;
+  img.x = (doc.width - img.width) / 2;
+  img.y = (doc.height - img.height) / 2;
 
   if (fitFitAvailable()) {
     imgMovable(true);
