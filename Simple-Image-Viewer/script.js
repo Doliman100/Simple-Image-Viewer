@@ -1,6 +1,6 @@
 'use strict';
 
-const scrollbarThickness = 17 / window.devicePixelRatio;
+const scrollbarThickness = 17;
 
 let fitType; // 0 = fit, 1 = fill, 2 = natural
 
@@ -20,13 +20,20 @@ function ratioCompare() {
   return doc.ratio < img.ratio;
 }
 
+// Units
+const pixels = Object.seal({
+  parse: (value) => Math.round(value * devicePixelRatio),
+  toString: (value) => `${value / devicePixelRatio}px`,
+  toNumber: (value) => value / devicePixelRatio,
+});
+
 // Document
 const doc = Object.seal({
   get fullWidth() {
-    return window.innerWidth;
+    return pixels.parse(window.innerWidth);
   },
   get fullHeight() {
-    return window.innerHeight;
+    return pixels.parse(window.innerHeight);
   },
   get width() {
     return isHigher() ? this.fullWidth - scrollbarThickness : this.fullWidth;
@@ -54,23 +61,23 @@ const img = Object.seal({
   },
 
   get width() {
-    return this.horizontal ? this.node.scrollWidth : this.node.scrollHeight;
+    return this.horizontal ? pixels.parse(this.node.scrollWidth) : pixels.parse(this.node.scrollHeight);
   },
   set width(value) {
     if (this.horizontal) {
-      this.node.style.width = `${value}px`;
+      this.node.style.width = pixels.toString(value);
     } else {
-      this.node.style.height = `${value}px`;
+      this.node.style.height = pixels.toString(value);
     }
   },
   get height() {
-    return this.horizontal ? this.node.scrollHeight : this.node.scrollWidth;
+    return this.horizontal ? pixels.parse(this.node.scrollHeight) : pixels.parse(this.node.scrollWidth);
   },
   set height(value) {
     if (this.horizontal) {
-      this.node.style.height = `${value}px`;
+      this.node.style.height = pixels.toString(value);
     } else {
-      this.node.style.width = `${value}px`;
+      this.node.style.width = pixels.toString(value);
     }
   },
   get ratio() {
@@ -78,10 +85,10 @@ const img = Object.seal({
   },
 
   set x(value) {
-    this.node.style.left = `${Math.max(value, 0)}px`;
+    this.node.style.left = pixels.toString(Math.max(value, 0));
   },
   set y(value) {
-    this.node.style.top = `${Math.max(value, 0)}px`;
+    this.node.style.top = pixels.toString(Math.max(value, 0));
   },
 });
 
@@ -135,8 +142,8 @@ function fitFill() {
 }
 
 function fitNatural() {
-  img.width = img.fullWidth;
-  img.height = img.fullHeight;
+  img.width = img.fullWidth * devicePixelRatio;
+  img.height = img.fullHeight * devicePixelRatio;
   img.x = (doc.width - img.width) / 2;
   img.y = (doc.height - img.height) / 2;
 
@@ -167,12 +174,12 @@ function fit() {
 function scroll() {
   switch (fitType) {
     case 1:
-      scrollTo((img.width - doc.fullWidth) / 2, (img.height - doc.fullHeight) / 2);
+      scrollTo(pixels.toNumber((img.width - doc.fullWidth) / 2), pixels.toNumber((img.height - doc.fullHeight) / 2));
 
       break;
 
     case 2:
-      scrollTo((img.fullWidth - doc.width) / 2, (img.fullHeight - doc.height) / 2);
+      scrollTo(pixels.toNumber((img.fullWidth - doc.width) / 2), pixels.toNumber((img.fullHeight - doc.height) / 2));
 
       break;
   }
