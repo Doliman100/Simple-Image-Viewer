@@ -29,11 +29,14 @@ const pixels = Object.seal({
 
 // Document
 const doc = Object.seal({
+  fullWidth_: undefined,
+  fullHeight_: undefined,
+
   get fullWidth() {
-    return pixels.parse(window.innerWidth);
+    return this.fullWidth_;
   },
   get fullHeight() {
-    return pixels.parse(window.innerHeight);
+    return this.fullHeight_;
   },
   get width() {
     return isHigher() ? this.fullWidth - scrollbarThickness : this.fullWidth;
@@ -44,6 +47,12 @@ const doc = Object.seal({
   get ratio() {
     return this.fullWidth / this.fullHeight;
   },
+  calcSize() {
+    document.body.style.overflow = 'hidden';
+    this.fullWidth_ = pixels.parse(visualViewport.width);
+    this.fullHeight_ = pixels.parse(visualViewport.height);
+    document.body.style.overflow = '';
+  },
 });
 
 // Image
@@ -51,6 +60,8 @@ const img = Object.seal({
   horizontal: true, // is angle 0 or 180 degrees (angle / 180)
   orientation: 0, // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
 
+  width_: undefined,
+  height_: undefined,
   node: undefined,
 
   get fullWidth() {
@@ -61,22 +72,26 @@ const img = Object.seal({
   },
 
   get width() {
-    return this.horizontal ? pixels.parse(this.node.scrollWidth) : pixels.parse(this.node.scrollHeight);
+    return this.horizontal ? this.width_ : this.height_;
   },
   set width(value) {
     if (this.horizontal) {
+      this.width_ = value;
       this.node.style.width = pixels.toString(value);
     } else {
+      this.height_ = value;
       this.node.style.height = pixels.toString(value);
     }
   },
   get height() {
-    return this.horizontal ? pixels.parse(this.node.scrollHeight) : pixels.parse(this.node.scrollWidth);
+    return this.horizontal ? this.height_ : this.width_;
   },
   set height(value) {
     if (this.horizontal) {
+      this.height_ = value;
       this.node.style.height = pixels.toString(value);
     } else {
+      this.width_ = value;
       this.node.style.width = pixels.toString(value);
     }
   },
@@ -186,6 +201,8 @@ function scroll() {
 }
 
 function fitUpdate() {
+  doc.calcSize();
+
   if (fitType == 0 && fitFitAvailable() || fitType == 1 && fitFillAvailable() || (fitType = 2)) {
     fit();
   }
