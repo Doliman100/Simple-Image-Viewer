@@ -9,15 +9,15 @@ let moveOffsetY;
 
 // Compare
 function isWider() {
-  return doc.fullWidth < img.fullWidth;
+  return win.fullWidth < img.fullWidth;
 }
 
 function isHigher() {
-  return doc.fullHeight < img.fullHeight;
+  return win.fullHeight < img.fullHeight;
 }
 
 function ratioCompare() {
-  return doc.ratio < img.ratio;
+  return win.ratio < img.ratio;
 }
 
 // Units
@@ -27,8 +27,8 @@ const pixels = Object.seal({
   toNumber: (value) => value / devicePixelRatio,
 });
 
-// Document
-const doc = Object.seal({
+// Window
+const win = Object.seal({
   fullWidth_: undefined,
   fullHeight_: undefined,
 
@@ -109,9 +109,9 @@ const img = Object.seal({
 
 function imgMovable(state) {
   if (state) {
-    document.onmousedown = onMouseDown;
+    window.addEventListener('mousedown', onMouseDown);
   } else {
-    document.onmousedown = undefined;
+    window.removeEventListener('mousedown', onMouseDown);
   }
 }
 
@@ -122,32 +122,32 @@ function fitFitAvailable() {
 
 function fitFillAvailable() {
   if (ratioCompare()) {
-    return doc.height < img.fullHeight && doc.fullWidth < Math.floor(img.fullWidth * doc.height / img.fullHeight);
+    return win.height < img.fullHeight && win.fullWidth < Math.floor(img.fullWidth * win.height / img.fullHeight);
   } else {
-    return doc.width < img.fullWidth && doc.fullHeight < Math.floor(img.fullHeight * doc.width / img.fullWidth);
+    return win.width < img.fullWidth && win.fullHeight < Math.floor(img.fullHeight * win.width / img.fullWidth);
   }
 }
 
 function fitFit() {
   if (ratioCompare()) {
-    img.width = doc.fullWidth;
+    img.width = win.fullWidth;
     img.height = img.width / img.ratio;
   } else {
-    img.height = doc.fullHeight;
+    img.height = win.fullHeight;
     img.width = img.height * img.ratio;
   }
-  img.x = (doc.fullWidth - img.width) / 2;
-  img.y = (doc.fullHeight - img.height) / 2;
+  img.x = (win.fullWidth - img.width) / 2;
+  img.y = (win.fullHeight - img.height) / 2;
 
   imgMovable(false);
 }
 
 function fitFill() {
   if (ratioCompare()) {
-    img.height = doc.height;
+    img.height = win.height;
     img.width = img.height * img.ratio;
   } else {
-    img.width = doc.width;
+    img.width = win.width;
     img.height = img.width / img.ratio;
   }
   img.x = 0;
@@ -159,8 +159,8 @@ function fitFill() {
 function fitNatural() {
   img.width = img.fullWidth * devicePixelRatio;
   img.height = img.fullHeight * devicePixelRatio;
-  img.x = (doc.width - img.width) / 2;
-  img.y = (doc.height - img.height) / 2;
+  img.x = (win.width - img.width) / 2;
+  img.y = (win.height - img.height) / 2;
 
   if (fitFitAvailable()) {
     imgMovable(true);
@@ -189,19 +189,19 @@ function fit() {
 function scroll() {
   switch (fitType) {
     case 1:
-      scrollTo(pixels.toNumber((img.width - doc.fullWidth) / 2), pixels.toNumber((img.height - doc.fullHeight) / 2));
+      scrollTo(pixels.toNumber((img.width - win.fullWidth) / 2), pixels.toNumber((img.height - win.fullHeight) / 2));
 
       break;
 
     case 2:
-      scrollTo(pixels.toNumber((img.fullWidth - doc.width) / 2), pixels.toNumber((img.fullHeight - doc.height) / 2));
+      scrollTo(pixels.toNumber((img.fullWidth - win.width) / 2), pixels.toNumber((img.fullHeight - win.height) / 2));
 
       break;
   }
 }
 
 function fitUpdate() {
-  doc.calcSize();
+  win.calcSize();
 
   if (fitType == 0 && fitFitAvailable() || fitType == 1 && fitFillAvailable() || (fitType = 2)) {
     fit();
@@ -243,19 +243,19 @@ function onMouseDown(e) {
   moveOffsetX = scrollX + e.clientX;
   moveOffsetY = scrollY + e.clientY;
 
-  document.onmouseup = onMouseUp;
-  document.onmousemove = onMouseMove;
+  window.addEventListener('mouseup', onMouseUp);
+  window.addEventListener('mousemove', onMouseMove);
 }
 
 function onMouseMove(e) {
   scrollTo(moveOffsetX - e.clientX, moveOffsetY - e.clientY);
 
-  return false;
+  e.preventDefault();
 }
 
 function onMouseUp() {
-  document.onmouseup = undefined;
-  document.onmousemove = undefined;
+  window.removeEventListener('mouseup', onMouseUp);
+  window.removeEventListener('mousemove', onMouseMove);
 }
 
 // Init
