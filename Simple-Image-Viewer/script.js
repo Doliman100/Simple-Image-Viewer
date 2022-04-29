@@ -303,31 +303,29 @@ window.addEventListener('resize', (e) => {
   e.stopImmediatePropagation();
 });
 
-window.addEventListener('keyup', (e) => {
-  if (!e.ctrlKey) {
+window.addEventListener('keydown', (e) => {
+  // https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/resources/pdf/pdf_viewer.ts;l=325;drc=30dc92ddfcd163862acd0d1b8f0ababae3d1e2f8
+  if (e.altKey || e.ctrlKey || e.metaKey) {
+    return;
+  }
+
+  if (e.shiftKey) {
+    if (e.code === 'KeyR') {
+      rotateCCW();
+    }
+  } else {
     switch (e.code) {
       case 'Digit1':
         applyFit(2);
-
         break;
-
       case 'Digit2':
         applyFit(1);
-
         break;
-
       case 'Digit3':
         applyFit(0);
-
         break;
-
       case 'KeyR':
-        if (e.shiftKey) {
-          rotateCCW();
-        } else {
-          rotateCW();
-        }
-
+        rotateCW();
         break;
     }
   }
