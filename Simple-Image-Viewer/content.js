@@ -7,5 +7,5 @@ if (document.contentType.startsWith('image/') && !document.contentType.endsWith(
   xhr.send();
 
   // execute script sync
-  eval(`${xhr.responseText}\n//# sourceURL=${chrome.runtime.getURL('script.js')}`);
+  window.eval(`${xhr.responseText}\n//# sourceURL=${chrome.runtime.getURL('script.js')}`);
 }
