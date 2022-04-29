@@ -275,7 +275,9 @@ xhr.send();
 
 // insert style sync
 const sheet = new CSSStyleSheet();
+// @ts-ignore
 sheet.replaceSync(xhr.responseText);
+// @ts-ignore
 document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
 
 const observer = new MutationObserver(() => {

@@ -2,6 +2,7 @@
   "name": "simple-image-viewer",
   "version": "1.0.0",
   "devDependencies": {
+    "@types/chrome": "^0.0.183",
     "eslint": "^8.12.0",
     "eslint-config-google": "^0.14.0"
   }
