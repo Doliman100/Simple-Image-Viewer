@@ -2,53 +2,51 @@
 
 // Units
 class Pixels {
-  parse(value) {
+  static parse(value) {
     return Math.round(value * devicePixelRatio);
   }
-  toNumber(value) {
+  static toNumber(value) {
     return value / devicePixelRatio;
   }
-  toString(value) {
+  static toString(value) {
     return `${value / devicePixelRatio}px`;
   }
 }
-const pixels = new Pixels();
 
 // Window
 class Win {
-  scrollbarThickness = 17;
-  fullWidth_;
-  fullHeight_;
+  static scrollbarThickness = 17;
+  static fullWidth_;
+  static fullHeight_;
 
-  get fullWidth() {
+  static get fullWidth() {
     return this.fullWidth_;
   }
-  get fullHeight() {
+  static get fullHeight() {
     return this.fullHeight_;
   }
-  get width() {
+  static get width() {
     return this.isHigher() ? this.fullWidth - this.scrollbarThickness : this.fullWidth;
   }
-  get height() {
+  static get height() {
     return this.isWider() ? this.fullHeight - this.scrollbarThickness : this.fullHeight;
   }
-  get ratio() {
+  static get ratio() {
     return this.fullWidth / this.fullHeight;
   }
-  isWider() {
+  static isWider() {
     return this.fullWidth < img.fullWidth;
   }
-  isHigher() {
+  static isHigher() {
     return this.fullHeight < img.fullHeight;
   }
-  calcSize() {
+  static calcSize() {
     document.body.style.overflow = 'hidden';
-    this.fullWidth_ = pixels.parse(visualViewport.width);
-    this.fullHeight_ = pixels.parse(visualViewport.height);
+    this.fullWidth_ = Pixels.parse(visualViewport.width);
+    this.fullHeight_ = Pixels.parse(visualViewport.height);
     document.body.style.overflow = '';
   }
 }
-const win = new Win();
 
 // Image
 class Img {
@@ -59,10 +57,10 @@ class Img {
   orientation = 0; // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
 
   set x(value) {
-    this.node.style.left = pixels.toString(Math.max(value, 0));
+    this.node.style.left = Pixels.toString(Math.max(value, 0));
   }
   set y(value) {
-    this.node.style.top = pixels.toString(Math.max(value, 0));
+    this.node.style.top = Pixels.toString(Math.max(value, 0));
   }
 
   get fullWidth() {
@@ -78,10 +76,10 @@ class Img {
   set width(value) {
     if (this.horizontal) {
       this.width_ = value;
-      this.node.style.width = pixels.toString(value);
+      this.node.style.width = Pixels.toString(value);
     } else {
       this.height_ = value;
-      this.node.style.height = pixels.toString(value);
+      this.node.style.height = Pixels.toString(value);
     }
   }
   get height() {
@@ -90,10 +88,10 @@ class Img {
   set height(value) {
     if (this.horizontal) {
       this.height_ = value;
-      this.node.style.height = pixels.toString(value);
+      this.node.style.height = Pixels.toString(value);
     } else {
       this.width_ = value;
-      this.node.style.width = pixels.toString(value);
+      this.node.style.width = Pixels.toString(value);
     }
   }
   get ratio() {
@@ -107,24 +105,24 @@ let fitType; // 0 = fit, 1 = fill, 2 = natural
 
 function fitFit() {
   if (ratioCompare()) {
-    img.width = win.fullWidth;
+    img.width = Win.fullWidth;
     img.height = img.width / img.ratio;
   } else {
-    img.height = win.fullHeight;
+    img.height = Win.fullHeight;
     img.width = img.height * img.ratio;
   }
-  img.x = (win.fullWidth - img.width) / 2;
-  img.y = (win.fullHeight - img.height) / 2;
+  img.x = (Win.fullWidth - img.width) / 2;
+  img.y = (Win.fullHeight - img.height) / 2;
 
   imgMovable(false);
 }
 
 function fitFill() {
   if (ratioCompare()) {
-    img.height = win.height;
+    img.height = Win.height;
     img.width = img.height * img.ratio;
   } else {
-    img.width = win.width;
+    img.width = Win.width;
     img.height = img.width / img.ratio;
   }
   img.x = 0;
@@ -136,8 +134,8 @@ function fitFill() {
 function fitNatural() {
   img.width = img.fullWidth * devicePixelRatio;
   img.height = img.fullHeight * devicePixelRatio;
-  img.x = (win.width - img.width) / 2;
-  img.y = (win.height - img.height) / 2;
+  img.x = (Win.width - img.width) / 2;
+  img.y = (Win.height - img.height) / 2;
 
   if (fitFitAvailable()) {
     imgMovable(true);
@@ -145,7 +143,7 @@ function fitNatural() {
 }
 
 function fitUpdate() {
-  win.calcSize();
+  Win.calcSize();
 
   if (fitType == 0 && fitFitAvailable() || fitType == 1 && fitFillAvailable() || (fitType = 2)) {
     fit();
@@ -162,18 +160,18 @@ function applyFit(n) {
 }
 
 function ratioCompare() {
-  return win.ratio < img.ratio;
+  return Win.ratio < img.ratio;
 }
 
 function fitFitAvailable() {
-  return win.isWider() || win.isHigher();
+  return Win.isWider() || Win.isHigher();
 }
 
 function fitFillAvailable() {
   if (ratioCompare()) {
-    return win.height < img.fullHeight && win.fullWidth < Math.floor(img.fullWidth * win.height / img.fullHeight);
+    return Win.height < img.fullHeight && Win.fullWidth < Math.floor(img.fullWidth * Win.height / img.fullHeight);
   } else {
-    return win.width < img.fullWidth && win.fullHeight < Math.floor(img.fullHeight * win.width / img.fullWidth);
+    return Win.width < img.fullWidth && Win.fullHeight < Math.floor(img.fullHeight * Win.width / img.fullWidth);
   }
 }
 
@@ -199,12 +197,12 @@ function fit() {
 function scroll() {
   switch (fitType) {
     case 1:
-      scrollTo(pixels.toNumber((img.width - win.fullWidth) / 2), pixels.toNumber((img.height - win.fullHeight) / 2));
+      scrollTo(Pixels.toNumber((img.width - Win.fullWidth) / 2), Pixels.toNumber((img.height - Win.fullHeight) / 2));
 
       break;
 
     case 2:
-      scrollTo(pixels.toNumber((img.fullWidth - win.width) / 2), pixels.toNumber((img.fullHeight - win.height) / 2));
+      scrollTo(Pixels.toNumber((img.fullWidth - Win.width) / 2), Pixels.toNumber((img.fullHeight - Win.height) / 2));
 
       break;
   }
