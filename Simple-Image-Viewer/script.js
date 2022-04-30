@@ -15,7 +15,7 @@ class Pixels {
 
 // Window
 class Win {
-  static scrollbarThickness = 17;
+  static SCROLLBAR_THICKNESS = 17;
   static fullWidth_;
   static fullHeight_;
 
@@ -26,19 +26,19 @@ class Win {
     return this.fullHeight_;
   }
   static get width() {
-    return this.isHigher() ? this.fullWidth - this.scrollbarThickness : this.fullWidth;
+    return this.isHigher() ? this.fullWidth_ - this.SCROLLBAR_THICKNESS : this.fullWidth_;
   }
   static get height() {
-    return this.isWider() ? this.fullHeight - this.scrollbarThickness : this.fullHeight;
+    return this.isWider() ? this.fullHeight_ - this.SCROLLBAR_THICKNESS : this.fullHeight_;
   }
   static get ratio() {
-    return this.fullWidth / this.fullHeight;
+    return this.fullWidth_ / this.fullHeight_;
   }
   static isWider() {
-    return this.fullWidth < img.fullWidth;
+    return this.fullWidth_ < img.fullWidth;
   }
   static isHigher() {
-    return this.fullHeight < img.fullHeight;
+    return this.fullHeight_ < img.fullHeight;
   }
   static calcSize() {
     document.body.style.overflow = 'hidden';
@@ -110,10 +110,10 @@ class Img {
 
 // Fit
 class Fit {
-  static fitType; // 0 = fit, 1 = fill, 2 = natural
+  static fitType_; // 0 = fit, 1 = fill, 2 = natural
 
   static fitFit() {
-    if (this.ratioCompare()) {
+    if (this.ratioCompare_()) {
       img.width = Win.fullWidth;
       img.height = img.width / img.ratio;
     } else {
@@ -127,7 +127,7 @@ class Fit {
   }
 
   static fitFill() {
-    if (this.ratioCompare()) {
+    if (this.ratioCompare_()) {
       img.height = Win.height;
       img.width = img.height * img.ratio;
     } else {
@@ -154,21 +154,21 @@ class Fit {
   static fitUpdate() {
     Win.calcSize();
 
-    if (this.fitType == 0 && this.fitFitAvailable() || this.fitType == 1 && this.fitFillAvailable() || (this.fitType = 2)) {
-      this.fit();
+    if (this.fitType_ == 0 && this.fitFitAvailable() || this.fitType_ == 1 && this.fitFillAvailable_() || (this.fitType_ = 2)) {
+      this.fit_();
     }
   }
 
   static applyFit(n) {
-    if (this.fitType != n && (n == 0 && this.fitFitAvailable() || n == 1 && this.fitFillAvailable() || n == 2)) {
-      this.fitType = n;
+    if (this.fitType_ != n && (n == 0 && this.fitFitAvailable() || n == 1 && this.fitFillAvailable_() || n == 2)) {
+      this.fitType_ = n;
 
-      this.fit();
-      this.scroll();
+      this.fit_();
+      this.scroll_();
     }
   }
 
-  static ratioCompare() {
+  static ratioCompare_() {
     return Win.ratio < img.ratio;
   }
 
@@ -176,16 +176,16 @@ class Fit {
     return Win.isWider() || Win.isHigher();
   }
 
-  static fitFillAvailable() {
-    if (this.ratioCompare()) {
+  static fitFillAvailable_() {
+    if (this.ratioCompare_()) {
       return Win.height < img.fullHeight && Win.fullWidth < Math.floor(img.fullWidth * Win.height / img.fullHeight);
     } else {
       return Win.width < img.fullWidth && Win.fullHeight < Math.floor(img.fullHeight * Win.width / img.fullWidth);
     }
   }
 
-  static fit() {
-    switch (this.fitType) {
+  static fit_() {
+    switch (this.fitType_) {
       case 0:
         this.fitFit();
 
@@ -203,8 +203,8 @@ class Fit {
     }
   }
 
-  static scroll() {
-    switch (this.fitType) {
+  static scroll_() {
+    switch (this.fitType_) {
       case 1:
         scrollTo(Pixels.toNumber((img.width - Win.fullWidth) / 2), Pixels.toNumber((img.height - Win.fullHeight) / 2));
 
@@ -223,16 +223,16 @@ class Rotate {
   static rotateCW() {
     img.orientation = (img.orientation + 1) % 4;
 
-    this.rotate();
+    this.rotate_();
   }
 
   static rotateCCW() {
     img.orientation = (img.orientation + 3) % 4;
 
-    this.rotate();
+    this.rotate_();
   }
 
-  static rotate() {
+  static rotate_() {
     img.node.className = `orientation-${img.orientation}`;
 
     img.horizontal = !img.horizontal; // img.orientation % 2
@@ -243,32 +243,32 @@ class Rotate {
 
 // Move
 class Move {
-  static moveOffsetX;
-  static moveOffsetY;
+  static moveOffsetX_;
+  static moveOffsetY_;
 
   static imgMovable(state) {
     if (state) {
-      window.addEventListener('mousedown', this.onMouseDown);
+      window.addEventListener('mousedown', this.onMouseDown_);
     } else {
-      window.removeEventListener('mousedown', this.onMouseDown);
+      window.removeEventListener('mousedown', this.onMouseDown_);
     }
   }
 
-  static onMouseDown = (e) => {
-    this.moveOffsetX = scrollX + e.clientX;
-    this.moveOffsetY = scrollY + e.clientY;
+  static onMouseDown_ = (e) => {
+    this.moveOffsetX_ = scrollX + e.clientX;
+    this.moveOffsetY_ = scrollY + e.clientY;
 
-    window.addEventListener('mouseup', this.onMouseUp);
-    window.addEventListener('mousemove', this.onMouseMove);
+    window.addEventListener('mouseup', this.onMouseUp_);
+    window.addEventListener('mousemove', this.onMouseMove_);
   };
 
-  static onMouseUp = () => {
-    window.removeEventListener('mouseup', this.onMouseUp);
-    window.removeEventListener('mousemove', this.onMouseMove);
+  static onMouseUp_ = () => {
+    window.removeEventListener('mouseup', this.onMouseUp_);
+    window.removeEventListener('mousemove', this.onMouseMove_);
   };
 
-  static onMouseMove = (e) => {
-    scrollTo(this.moveOffsetX - e.clientX, this.moveOffsetY - e.clientY);
+  static onMouseMove_ = (e) => {
+    scrollTo(this.moveOffsetX_ - e.clientX, this.moveOffsetY_ - e.clientY);
 
     e.preventDefault();
   };
