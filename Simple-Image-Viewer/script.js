@@ -3,13 +3,13 @@
 // Units
 class Pixels {
   static parse(value) {
-    return Math.round(value * devicePixelRatio);
+    return Math.round(value * window.devicePixelRatio);
   }
   static toNumber(value) {
-    return value / devicePixelRatio;
+    return value / window.devicePixelRatio;
   }
   static toString(value) {
-    return `${value / devicePixelRatio}px`;
+    return `${value / window.devicePixelRatio}px`;
   }
 }
 
@@ -141,8 +141,8 @@ class Fit {
   }
 
   static fitNatural() {
-    img.width = img.fullWidth * devicePixelRatio;
-    img.height = img.fullHeight * devicePixelRatio;
+    img.width = img.fullWidth * window.devicePixelRatio;
+    img.height = img.fullHeight * window.devicePixelRatio;
     img.x = (Win.width - img.width) / 2;
     img.y = (Win.height - img.height) / 2;
 
@@ -206,12 +206,12 @@ class Fit {
   static scroll_() {
     switch (this.fittingType_) {
       case 1:
-        scrollTo(Pixels.toNumber((img.width - Win.fullWidth) / 2), Pixels.toNumber((img.height - Win.fullHeight) / 2));
+        window.scrollTo(Pixels.toNumber((img.width - Win.fullWidth) / 2), Pixels.toNumber((img.height - Win.fullHeight) / 2));
 
         break;
 
       case 2:
-        scrollTo(Pixels.toNumber((img.fullWidth - Win.width) / 2), Pixels.toNumber((img.fullHeight - Win.height) / 2));
+        window.scrollTo(Pixels.toNumber((img.fullWidth - Win.width) / 2), Pixels.toNumber((img.fullHeight - Win.height) / 2));
 
         break;
     }
@@ -253,8 +253,8 @@ class ViewportScroller {
   }
 
   static onMousedown_ = (e) => {
-    this.offsetX_ = scrollX + e.clientX;
-    this.offsetY_ = scrollY + e.clientY;
+    this.offsetX_ = window.scrollX + e.clientX;
+    this.offsetY_ = window.scrollY + e.clientY;
 
     window.addEventListener('mouseup', this.onMouseup_);
     window.addEventListener('mousemove', this.onMousemove_);
@@ -266,7 +266,7 @@ class ViewportScroller {
   };
 
   static onMousemove_ = (e) => {
-    scrollTo(this.offsetX_ - e.clientX, this.offsetY_ - e.clientY);
+    window.scrollTo(this.offsetX_ - e.clientX, this.offsetY_ - e.clientY);
 
     e.preventDefault();
   };
