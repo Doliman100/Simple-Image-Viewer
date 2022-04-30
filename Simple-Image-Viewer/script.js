@@ -1,41 +1,22 @@
 'use strict';
 
-const scrollbarThickness = 17;
-
-let fitType; // 0 = fit, 1 = fill, 2 = natural
-
-let moveOffsetX;
-let moveOffsetY;
-
-// Compare
-function isWider() {
-  return win.fullWidth < img.fullWidth;
-}
-
-function isHigher() {
-  return win.fullHeight < img.fullHeight;
-}
-
-function ratioCompare() {
-  return win.ratio < img.ratio;
-}
-
 // Units
 class Pixels {
   parse(value) {
     return Math.round(value * devicePixelRatio);
   }
-  toString(value) {
-    return `${value / devicePixelRatio}px`;
-  }
   toNumber(value) {
     return value / devicePixelRatio;
+  }
+  toString(value) {
+    return `${value / devicePixelRatio}px`;
   }
 }
 const pixels = new Pixels();
 
 // Window
 class Win {
+  scrollbarThickness = 17;
   fullWidth_;
   fullHeight_;
 
@@ -46,13 +27,19 @@ class Win {
     return this.fullHeight_;
   }
   get width() {
-    return isHigher() ? this.fullWidth - scrollbarThickness : this.fullWidth;
+    return this.isHigher() ? this.fullWidth - this.scrollbarThickness : this.fullWidth;
   }
   get height() {
-    return isWider() ? this.fullHeight - scrollbarThickness : this.fullHeight;
+    return this.isWider() ? this.fullHeight - this.scrollbarThickness : this.fullHeight;
   }
   get ratio() {
     return this.fullWidth / this.fullHeight;
+  }
+  isWider() {
+    return this.fullWidth < img.fullWidth;
+  }
+  isHigher() {
+    return this.fullHeight < img.fullHeight;
   }
   calcSize() {
     document.body.style.overflow = 'hidden';
@@ -65,12 +52,18 @@ const win = new Win();
 
 // Image
 class Img {
+  node;
+  width_;
+  height_;
   horizontal = true; // is angle 0 or 180 degrees (angle / 180)
   orientation = 0; // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
 
-  width_;
-  height_;
-  node;
+  set x(value) {
+    this.node.style.left = pixels.toString(Math.max(value, 0));
+  }
+  set y(value) {
+    this.node.style.top = pixels.toString(Math.max(value, 0));
+  }
 
   get fullWidth() {
     return this.horizontal ? this.node.naturalWidth : this.node.naturalHeight;
@@ -106,36 +99,11 @@ class Img {
   get ratio() {
     return this.fullWidth / this.fullHeight;
   }
-
-  set x(value) {
-    this.node.style.left = pixels.toString(Math.max(value, 0));
-  }
-  set y(value) {
-    this.node.style.top = pixels.toString(Math.max(value, 0));
-  }
 }
 const img = new Img();
 
-function imgMovable(state) {
-  if (state) {
-    window.addEventListener('mousedown', onMouseDown);
-  } else {
-    window.removeEventListener('mousedown', onMouseDown);
-  }
-}
-
 // Fit
-function fitFitAvailable() {
-  return isWider() || isHigher();
-}
-
-function fitFillAvailable() {
-  if (ratioCompare()) {
-    return win.height < img.fullHeight && win.fullWidth < Math.floor(img.fullWidth * win.height / img.fullHeight);
-  } else {
-    return win.width < img.fullWidth && win.fullHeight < Math.floor(img.fullHeight * win.width / img.fullWidth);
-  }
-}
+let fitType; // 0 = fit, 1 = fill, 2 = natural
 
 function fitFit() {
   if (ratioCompare()) {
@@ -176,6 +144,39 @@ function fitNatural() {
   }
 }
 
+function fitUpdate() {
+  win.calcSize();
+
+  if (fitType == 0 && fitFitAvailable() || fitType == 1 && fitFillAvailable() || (fitType = 2)) {
+    fit();
+  }
+}
+
+function applyFit(n) {
+  if (fitType != n && (n == 0 && fitFitAvailable() || n == 1 && fitFillAvailable() || n == 2)) {
+    fitType = n;
+
+    fit();
+    scroll();
+  }
+}
+
+function ratioCompare() {
+  return win.ratio < img.ratio;
+}
+
+function fitFitAvailable() {
+  return win.isWider() || win.isHigher();
+}
+
+function fitFillAvailable() {
+  if (ratioCompare()) {
+    return win.height < img.fullHeight && win.fullWidth < Math.floor(img.fullWidth * win.height / img.fullHeight);
+  } else {
+    return win.width < img.fullWidth && win.fullHeight < Math.floor(img.fullHeight * win.width / img.fullWidth);
+  }
+}
+
 function fit() {
   switch (fitType) {
     case 0:
@@ -209,32 +210,7 @@ function scroll() {
   }
 }
 
-function fitUpdate() {
-  win.calcSize();
-
-  if (fitType == 0 && fitFitAvailable() || fitType == 1 && fitFillAvailable() || (fitType = 2)) {
-    fit();
-  }
-}
-
-function applyFit(n) {
-  if (fitType != n && (n == 0 && fitFitAvailable() || n == 1 && fitFillAvailable() || n == 2)) {
-    fitType = n;
-
-    fit();
-    scroll();
-  }
-}
-
 // Rotate
-function rotate() {
-  img.node.className = `orientation-${img.orientation}`;
-
-  img.horizontal = !img.horizontal; // img.orientation % 2
-
-  fitUpdate();
-}
-
 function rotateCW() {
   img.orientation = (img.orientation + 1) % 4;
 
@@ -247,7 +223,26 @@ function rotateCCW() {
   rotate();
 }
 
+function rotate() {
+  img.node.className = `orientation-${img.orientation}`;
+
+  img.horizontal = !img.horizontal; // img.orientation % 2
+
+  fitUpdate();
+}
+
 // Move
+let moveOffsetX;
+let moveOffsetY;
+
+function imgMovable(state) {
+  if (state) {
+    window.addEventListener('mousedown', onMouseDown);
+  } else {
+    window.removeEventListener('mousedown', onMouseDown);
+  }
+}
+
 function onMouseDown(e) {
   moveOffsetX = scrollX + e.clientX;
   moveOffsetY = scrollY + e.clientY;
@@ -256,15 +251,15 @@ function onMouseDown(e) {
   window.addEventListener('mousemove', onMouseMove);
 }
 
+function onMouseUp() {
+  window.removeEventListener('mouseup', onMouseUp);
+  window.removeEventListener('mousemove', onMouseMove);
+}
+
 function onMouseMove(e) {
   scrollTo(moveOffsetX - e.clientX, moveOffsetY - e.clientY);
 
   e.preventDefault();
-}
-
-function onMouseUp() {
-  window.removeEventListener('mouseup', onMouseUp);
-  window.removeEventListener('mousemove', onMouseMove);
 }
 
 // Init
