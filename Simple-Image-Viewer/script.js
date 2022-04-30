@@ -50,11 +50,20 @@ class Win {
 
 // Image
 class Img {
-  node;
+  node; // image_element_
   width_;
   height_;
   horizontal = true; // is angle 0 or 180 degrees (angle / 180)
   orientation = 0; // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
+
+  constructor(element) {
+    if (element instanceof HTMLImageElement === false) {
+      throw new TypeError('Failed to construct \'Img\': parameter 1 is not of type \'HTMLImageElement\'.');
+    }
+    this.node = element;
+    this.node.className = 'orientation-0';
+    this.node.addEventListener('click', (e) => e.stopPropagation(), true);
+  }
 
   set x(value) {
     this.node.style.left = Pixels.toString(Math.max(value, 0));
@@ -98,7 +107,6 @@ class Img {
     return this.fullWidth / this.fullHeight;
   }
 }
-const img = new Img();
 
 // Fit
 let fitType; // 0 = fit, 1 = fill, 2 = natural
@@ -261,6 +269,8 @@ function onMouseMove(e) {
 }
 
 // Init
+let img;
+
 function undoDefault() {
   img.node.style.margin = '';
   img.node.style.cursor = '';
@@ -284,10 +294,7 @@ document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
 
 const observer = new MutationObserver(() => {
   if (document.body) {
-    // img_element_
-    img.node = document.body.firstChild;
-    img.node.className = 'orientation-0';
-    img.node.addEventListener('click', (e) => e.stopPropagation(), true);
+    img = new Img(document.body.firstChild);
 
     undoDefault();
     applyFit(fitFitAvailable() ? 0 : 2);
