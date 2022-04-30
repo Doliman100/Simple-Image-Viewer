@@ -109,164 +109,164 @@ class Img {
 }
 
 // Fit
-let fitType; // 0 = fit, 1 = fill, 2 = natural
+  let fitType; // 0 = fit, 1 = fill, 2 = natural
 
-function fitFit() {
-  if (ratioCompare()) {
-    img.width = Win.fullWidth;
-    img.height = img.width / img.ratio;
-  } else {
-    img.height = Win.fullHeight;
-    img.width = img.height * img.ratio;
+  function fitFit() {
+    if (ratioCompare()) {
+      img.width = Win.fullWidth;
+      img.height = img.width / img.ratio;
+    } else {
+      img.height = Win.fullHeight;
+      img.width = img.height * img.ratio;
+    }
+    img.x = (Win.fullWidth - img.width) / 2;
+    img.y = (Win.fullHeight - img.height) / 2;
+
+    imgMovable(false);
   }
-  img.x = (Win.fullWidth - img.width) / 2;
-  img.y = (Win.fullHeight - img.height) / 2;
 
-  imgMovable(false);
-}
+  function fitFill() {
+    if (ratioCompare()) {
+      img.height = Win.height;
+      img.width = img.height * img.ratio;
+    } else {
+      img.width = Win.width;
+      img.height = img.width / img.ratio;
+    }
+    img.x = 0;
+    img.y = 0;
 
-function fitFill() {
-  if (ratioCompare()) {
-    img.height = Win.height;
-    img.width = img.height * img.ratio;
-  } else {
-    img.width = Win.width;
-    img.height = img.width / img.ratio;
-  }
-  img.x = 0;
-  img.y = 0;
-
-  imgMovable(true);
-}
-
-function fitNatural() {
-  img.width = img.fullWidth * devicePixelRatio;
-  img.height = img.fullHeight * devicePixelRatio;
-  img.x = (Win.width - img.width) / 2;
-  img.y = (Win.height - img.height) / 2;
-
-  if (fitFitAvailable()) {
     imgMovable(true);
   }
-}
 
-function fitUpdate() {
-  Win.calcSize();
+  function fitNatural() {
+    img.width = img.fullWidth * devicePixelRatio;
+    img.height = img.fullHeight * devicePixelRatio;
+    img.x = (Win.width - img.width) / 2;
+    img.y = (Win.height - img.height) / 2;
 
-  if (fitType == 0 && fitFitAvailable() || fitType == 1 && fitFillAvailable() || (fitType = 2)) {
-    fit();
+    if (fitFitAvailable()) {
+      imgMovable(true);
+    }
   }
-}
 
-function applyFit(n) {
-  if (fitType != n && (n == 0 && fitFitAvailable() || n == 1 && fitFillAvailable() || n == 2)) {
-    fitType = n;
+  function fitUpdate() {
+    Win.calcSize();
 
-    fit();
-    scroll();
+    if (fitType == 0 && fitFitAvailable() || fitType == 1 && fitFillAvailable() || (fitType = 2)) {
+      fit();
+    }
   }
-}
 
-function ratioCompare() {
-  return Win.ratio < img.ratio;
-}
+  function applyFit(n) {
+    if (fitType != n && (n == 0 && fitFitAvailable() || n == 1 && fitFillAvailable() || n == 2)) {
+      fitType = n;
 
-function fitFitAvailable() {
-  return Win.isWider() || Win.isHigher();
-}
-
-function fitFillAvailable() {
-  if (ratioCompare()) {
-    return Win.height < img.fullHeight && Win.fullWidth < Math.floor(img.fullWidth * Win.height / img.fullHeight);
-  } else {
-    return Win.width < img.fullWidth && Win.fullHeight < Math.floor(img.fullHeight * Win.width / img.fullWidth);
+      fit();
+      scroll();
+    }
   }
-}
 
-function fit() {
-  switch (fitType) {
-    case 0:
-      fitFit();
-
-      break;
-
-    case 1:
-      fitFill();
-
-      break;
-
-    case 2:
-      fitNatural();
-
-      break;
+  function ratioCompare() {
+    return Win.ratio < img.ratio;
   }
-}
 
-function scroll() {
-  switch (fitType) {
-    case 1:
-      scrollTo(Pixels.toNumber((img.width - Win.fullWidth) / 2), Pixels.toNumber((img.height - Win.fullHeight) / 2));
-
-      break;
-
-    case 2:
-      scrollTo(Pixels.toNumber((img.fullWidth - Win.width) / 2), Pixels.toNumber((img.fullHeight - Win.height) / 2));
-
-      break;
+  function fitFitAvailable() {
+    return Win.isWider() || Win.isHigher();
   }
-}
+
+  function fitFillAvailable() {
+    if (ratioCompare()) {
+      return Win.height < img.fullHeight && Win.fullWidth < Math.floor(img.fullWidth * Win.height / img.fullHeight);
+    } else {
+      return Win.width < img.fullWidth && Win.fullHeight < Math.floor(img.fullHeight * Win.width / img.fullWidth);
+    }
+  }
+
+  function fit() {
+    switch (fitType) {
+      case 0:
+        fitFit();
+
+        break;
+
+      case 1:
+        fitFill();
+
+        break;
+
+      case 2:
+        fitNatural();
+
+        break;
+    }
+  }
+
+  function scroll() {
+    switch (fitType) {
+      case 1:
+        scrollTo(Pixels.toNumber((img.width - Win.fullWidth) / 2), Pixels.toNumber((img.height - Win.fullHeight) / 2));
+
+        break;
+
+      case 2:
+        scrollTo(Pixels.toNumber((img.fullWidth - Win.width) / 2), Pixels.toNumber((img.fullHeight - Win.height) / 2));
+
+        break;
+    }
+  }
 
 // Rotate
-function rotateCW() {
-  img.orientation = (img.orientation + 1) % 4;
+  function rotateCW() {
+    img.orientation = (img.orientation + 1) % 4;
 
-  rotate();
-}
+    rotate();
+  }
 
-function rotateCCW() {
-  img.orientation = (img.orientation + 3) % 4;
+  function rotateCCW() {
+    img.orientation = (img.orientation + 3) % 4;
 
-  rotate();
-}
+    rotate();
+  }
 
-function rotate() {
-  img.node.className = `orientation-${img.orientation}`;
+  function rotate() {
+    img.node.className = `orientation-${img.orientation}`;
 
-  img.horizontal = !img.horizontal; // img.orientation % 2
+    img.horizontal = !img.horizontal; // img.orientation % 2
 
-  fitUpdate();
-}
+    fitUpdate();
+  }
 
 // Move
-let moveOffsetX;
-let moveOffsetY;
+  let moveOffsetX;
+  let moveOffsetY;
 
-function imgMovable(state) {
-  if (state) {
-    window.addEventListener('mousedown', onMouseDown);
-  } else {
-    window.removeEventListener('mousedown', onMouseDown);
+  function imgMovable(state) {
+    if (state) {
+      window.addEventListener('mousedown', onMouseDown);
+    } else {
+      window.removeEventListener('mousedown', onMouseDown);
+    }
   }
-}
 
-function onMouseDown(e) {
-  moveOffsetX = scrollX + e.clientX;
-  moveOffsetY = scrollY + e.clientY;
+  function onMouseDown(e) {
+    moveOffsetX = scrollX + e.clientX;
+    moveOffsetY = scrollY + e.clientY;
 
-  window.addEventListener('mouseup', onMouseUp);
-  window.addEventListener('mousemove', onMouseMove);
-}
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mousemove', onMouseMove);
+  }
 
-function onMouseUp() {
-  window.removeEventListener('mouseup', onMouseUp);
-  window.removeEventListener('mousemove', onMouseMove);
-}
+  function onMouseUp() {
+    window.removeEventListener('mouseup', onMouseUp);
+    window.removeEventListener('mousemove', onMouseMove);
+  }
 
-function onMouseMove(e) {
-  scrollTo(moveOffsetX - e.clientX, moveOffsetY - e.clientY);
+  function onMouseMove(e) {
+    scrollTo(moveOffsetX - e.clientX, moveOffsetY - e.clientY);
 
-  e.preventDefault();
-}
+    e.preventDefault();
+  }
 
 // Init
 let img;
@@ -280,29 +280,29 @@ function undoDefault() {
   fitUpdate();
 }
 
-// load style sync
-const xhr = new XMLHttpRequest();
-xhr.open('GET', chrome.runtime.getURL('style.css'), false);
-xhr.send();
+  // load style sync
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', chrome.runtime.getURL('style.css'), false);
+  xhr.send();
 
-// insert style sync
-const sheet = new CSSStyleSheet();
-// @ts-ignore
-sheet.replaceSync(xhr.responseText);
-// @ts-ignore
-document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+  // insert style sync
+  const sheet = new CSSStyleSheet();
+  // @ts-ignore
+  sheet.replaceSync(xhr.responseText);
+  // @ts-ignore
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
 
-const observer = new MutationObserver(() => {
-  if (document.body) {
-    img = new Img(document.body.firstChild);
+  const observer = new MutationObserver(() => {
+    if (document.body) {
+      img = new Img(document.body.firstChild);
 
-    undoDefault();
-    applyFit(fitFitAvailable() ? 0 : 2);
+      undoDefault();
+      applyFit(fitFitAvailable() ? 0 : 2);
 
-    observer.disconnect();
-  }
-});
-observer.observe(document.documentElement, {childList: true});
+      observer.disconnect();
+    }
+  });
+  observer.observe(document.documentElement, {childList: true});
 
 // Events
 window.addEventListener('DOMContentLoaded', undoDefault);
