@@ -26,18 +26,18 @@ class Win {
     return this.fullHeight_;
   }
   static get width() {
-    return this.isHigher() ? this.fullWidth_ - this.SCROLLBAR_THICKNESS : this.fullWidth_;
+    return this.isVerticalScrollbarVisible() ? this.fullWidth_ - this.SCROLLBAR_THICKNESS : this.fullWidth_;
   }
   static get height() {
-    return this.isWider() ? this.fullHeight_ - this.SCROLLBAR_THICKNESS : this.fullHeight_;
+    return this.isHorizontalScrollbarVisible() ? this.fullHeight_ - this.SCROLLBAR_THICKNESS : this.fullHeight_;
   }
   static get ratio() {
     return this.fullWidth_ / this.fullHeight_;
   }
-  static isWider() {
+  static isHorizontalScrollbarVisible() {
     return this.fullWidth_ < img.fullWidth;
   }
-  static isHigher() {
+  static isVerticalScrollbarVisible() {
     return this.fullHeight_ < img.fullHeight;
   }
   static calcSize() {
@@ -50,33 +50,33 @@ class Win {
 
 // Image
 class Img {
-  node; // image_element_
+  element; // image_element_
   width_;
   height_;
-  horizontal = true; // is angle 0 or 180 degrees (angle / 180)
   orientation = 0; // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
+  horizontal = true; // is angle 0 or 180 degrees (orientation % 2 === 0)
 
   constructor(element) {
     if (element instanceof HTMLImageElement === false) {
       throw new TypeError('Failed to construct \'Img\': parameter 1 is not of type \'HTMLImageElement\'.');
     }
-    this.node = element;
-    this.node.className = 'orientation-0';
-    this.node.addEventListener('click', (e) => e.stopPropagation(), true);
+    this.element = element;
+    this.element.className = 'orientation-0';
+    this.element.addEventListener('click', (e) => e.stopPropagation(), true);
   }
 
   set x(value) {
-    this.node.style.left = Pixels.toString(Math.max(value, 0));
+    this.element.style.left = Pixels.toString(Math.max(value, 0));
   }
   set y(value) {
-    this.node.style.top = Pixels.toString(Math.max(value, 0));
+    this.element.style.top = Pixels.toString(Math.max(value, 0));
   }
 
   get fullWidth() {
-    return this.horizontal ? this.node.naturalWidth : this.node.naturalHeight;
+    return this.horizontal ? this.element.naturalWidth : this.element.naturalHeight;
   }
   get fullHeight() {
-    return this.horizontal ? this.node.naturalHeight : this.node.naturalWidth;
+    return this.horizontal ? this.element.naturalHeight : this.element.naturalWidth;
   }
 
   get width() {
@@ -85,10 +85,10 @@ class Img {
   set width(value) {
     if (this.horizontal) {
       this.width_ = value;
-      this.node.style.width = Pixels.toString(value);
+      this.element.style.width = Pixels.toString(value);
     } else {
       this.height_ = value;
-      this.node.style.height = Pixels.toString(value);
+      this.element.style.height = Pixels.toString(value);
     }
   }
   get height() {
@@ -97,10 +97,10 @@ class Img {
   set height(value) {
     if (this.horizontal) {
       this.height_ = value;
-      this.node.style.height = Pixels.toString(value);
+      this.element.style.height = Pixels.toString(value);
     } else {
       this.width_ = value;
-      this.node.style.width = Pixels.toString(value);
+      this.element.style.width = Pixels.toString(value);
     }
   }
   get ratio() {
@@ -110,7 +110,7 @@ class Img {
 
 // Fit
 class Fit {
-  static fitType_; // 0 = fit, 1 = fill, 2 = natural
+  static fittingType_; // 0 = fit, 1 = fill, 2 = natural
 
   static fitFit() {
     if (this.ratioCompare_()) {
@@ -123,7 +123,7 @@ class Fit {
     img.x = (Win.fullWidth - img.width) / 2;
     img.y = (Win.fullHeight - img.height) / 2;
 
-    Move.imgMovable(false);
+    ViewportScroller.setScrollable(false);
   }
 
   static fitFill() {
@@ -137,7 +137,7 @@ class Fit {
     img.x = 0;
     img.y = 0;
 
-    Move.imgMovable(true);
+    ViewportScroller.setScrollable(true);
   }
 
   static fitNatural() {
@@ -146,22 +146,22 @@ class Fit {
     img.x = (Win.width - img.width) / 2;
     img.y = (Win.height - img.height) / 2;
 
-    if (this.fitFitAvailable()) {
-      Move.imgMovable(true);
+    if (this.isFitAvailable()) {
+      ViewportScroller.setScrollable(true);
     }
   }
 
-  static fitUpdate() {
+  static update() {
     Win.calcSize();
 
-    if (this.fitType_ == 0 && this.fitFitAvailable() || this.fitType_ == 1 && this.fitFillAvailable_() || (this.fitType_ = 2)) {
+    if (this.fittingType_ == 0 && this.isFitAvailable() || this.fittingType_ == 1 && this.isFillAvailable_() || (this.fittingType_ = 2)) {
       this.fit_();
     }
   }
 
-  static applyFit(n) {
-    if (this.fitType_ != n && (n == 0 && this.fitFitAvailable() || n == 1 && this.fitFillAvailable_() || n == 2)) {
-      this.fitType_ = n;
+  static applyFit(fittingType) {
+    if (this.fittingType_ != fittingType && (fittingType == 0 && this.isFitAvailable() || fittingType == 1 && this.isFillAvailable_() || fittingType == 2)) {
+      this.fittingType_ = fittingType;
 
       this.fit_();
       this.scroll_();
@@ -172,11 +172,11 @@ class Fit {
     return Win.ratio < img.ratio;
   }
 
-  static fitFitAvailable() {
-    return Win.isWider() || Win.isHigher();
+  static isFitAvailable() {
+    return Win.isHorizontalScrollbarVisible() || Win.isVerticalScrollbarVisible();
   }
 
-  static fitFillAvailable_() {
+  static isFillAvailable_() {
     if (this.ratioCompare_()) {
       return Win.height < img.fullHeight && Win.fullWidth < Math.floor(img.fullWidth * Win.height / img.fullHeight);
     } else {
@@ -185,7 +185,7 @@ class Fit {
   }
 
   static fit_() {
-    switch (this.fitType_) {
+    switch (this.fittingType_) {
       case 0:
         this.fitFit();
 
@@ -204,7 +204,7 @@ class Fit {
   }
 
   static scroll_() {
-    switch (this.fitType_) {
+    switch (this.fittingType_) {
       case 1:
         scrollTo(Pixels.toNumber((img.width - Win.fullWidth) / 2), Pixels.toNumber((img.height - Win.fullHeight) / 2));
 
@@ -220,55 +220,53 @@ class Fit {
 
 // Rotate
 class Rotate {
-  static rotateCW() {
+  static cw() {
     img.orientation = (img.orientation + 1) % 4;
 
-    this.rotate_();
+    this.do_();
   }
-
-  static rotateCCW() {
+  static ccw() {
     img.orientation = (img.orientation + 3) % 4;
 
-    this.rotate_();
+    this.do_();
   }
-
-  static rotate_() {
-    img.node.className = `orientation-${img.orientation}`;
+  static do_() {
+    img.element.className = `orientation-${img.orientation}`;
 
     img.horizontal = !img.horizontal; // img.orientation % 2
 
-    Fit.fitUpdate();
+    Fit.update();
   }
 }
 
 // Move
-class Move {
-  static moveOffsetX_;
-  static moveOffsetY_;
+class ViewportScroller {
+  static offsetX_;
+  static offsetY_;
 
-  static imgMovable(state) {
-    if (state) {
-      window.addEventListener('mousedown', this.onMouseDown_);
+  static setScrollable(value) {
+    if (value) {
+      window.addEventListener('mousedown', this.onMousedown_);
     } else {
-      window.removeEventListener('mousedown', this.onMouseDown_);
+      window.removeEventListener('mousedown', this.onMousedown_);
     }
   }
 
-  static onMouseDown_ = (e) => {
-    this.moveOffsetX_ = scrollX + e.clientX;
-    this.moveOffsetY_ = scrollY + e.clientY;
+  static onMousedown_ = (e) => {
+    this.offsetX_ = scrollX + e.clientX;
+    this.offsetY_ = scrollY + e.clientY;
 
-    window.addEventListener('mouseup', this.onMouseUp_);
-    window.addEventListener('mousemove', this.onMouseMove_);
+    window.addEventListener('mouseup', this.onMouseup_);
+    window.addEventListener('mousemove', this.onMousemove_);
   };
 
-  static onMouseUp_ = () => {
-    window.removeEventListener('mouseup', this.onMouseUp_);
-    window.removeEventListener('mousemove', this.onMouseMove_);
+  static onMouseup_ = () => {
+    window.removeEventListener('mouseup', this.onMouseup_);
+    window.removeEventListener('mousemove', this.onMousemove_);
   };
 
-  static onMouseMove_ = (e) => {
-    scrollTo(this.moveOffsetX_ - e.clientX, this.moveOffsetY_ - e.clientY);
+  static onMousemove_ = (e) => {
+    scrollTo(this.offsetX_ - e.clientX, this.offsetY_ - e.clientY);
 
     e.preventDefault();
   };
@@ -278,12 +276,12 @@ class Move {
 let img;
 
 function undoDefault() {
-  img.node.style.margin = '';
-  img.node.style.cursor = '';
-  img.node.width = img.node.naturalWidth;
-  img.node.height = img.node.naturalHeight;
+  img.element.style.margin = '';
+  img.element.style.cursor = '';
+  img.element.width = img.element.naturalWidth;
+  img.element.height = img.element.naturalHeight;
 
-  Fit.fitUpdate();
+  Fit.update();
 }
 
 {
@@ -304,7 +302,7 @@ function undoDefault() {
       img = new Img(document.body.firstChild);
 
       undoDefault();
-      Fit.applyFit(Fit.fitFitAvailable() ? 0 : 2);
+      Fit.applyFit(Fit.isFitAvailable() ? 0 : 2);
 
       observer.disconnect();
     }
@@ -315,7 +313,7 @@ function undoDefault() {
 // Events
 window.addEventListener('DOMContentLoaded', undoDefault);
 window.addEventListener('resize', (e) => {
-  Fit.fitUpdate();
+  Fit.update();
 
   e.stopImmediatePropagation();
 });
@@ -328,7 +326,7 @@ window.addEventListener('keydown', (e) => {
 
   if (e.shiftKey) {
     if (e.code === 'KeyR') {
-      Rotate.rotateCCW();
+      Rotate.ccw();
     }
   } else {
     switch (e.code) {
@@ -342,7 +340,7 @@ window.addEventListener('keydown', (e) => {
         Fit.applyFit(0);
         break;
       case 'KeyR':
-        Rotate.rotateCW();
+        Rotate.cw();
         break;
     }
   }
