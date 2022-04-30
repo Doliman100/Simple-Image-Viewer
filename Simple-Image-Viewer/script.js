@@ -109,10 +109,11 @@ class Img {
 }
 
 // Fit
-  let fitType; // 0 = fit, 1 = fill, 2 = natural
+class Fit {
+  static fitType; // 0 = fit, 1 = fill, 2 = natural
 
-  function fitFit() {
-    if (ratioCompare()) {
+  static fitFit() {
+    if (this.ratioCompare()) {
       img.width = Win.fullWidth;
       img.height = img.width / img.ratio;
     } else {
@@ -122,11 +123,11 @@ class Img {
     img.x = (Win.fullWidth - img.width) / 2;
     img.y = (Win.fullHeight - img.height) / 2;
 
-    imgMovable(false);
+    Move.imgMovable(false);
   }
 
-  function fitFill() {
-    if (ratioCompare()) {
+  static fitFill() {
+    if (this.ratioCompare()) {
       img.height = Win.height;
       img.width = img.height * img.ratio;
     } else {
@@ -136,74 +137,74 @@ class Img {
     img.x = 0;
     img.y = 0;
 
-    imgMovable(true);
+    Move.imgMovable(true);
   }
 
-  function fitNatural() {
+  static fitNatural() {
     img.width = img.fullWidth * devicePixelRatio;
     img.height = img.fullHeight * devicePixelRatio;
     img.x = (Win.width - img.width) / 2;
     img.y = (Win.height - img.height) / 2;
 
-    if (fitFitAvailable()) {
-      imgMovable(true);
+    if (this.fitFitAvailable()) {
+      Move.imgMovable(true);
     }
   }
 
-  function fitUpdate() {
+  static fitUpdate() {
     Win.calcSize();
 
-    if (fitType == 0 && fitFitAvailable() || fitType == 1 && fitFillAvailable() || (fitType = 2)) {
-      fit();
+    if (this.fitType == 0 && this.fitFitAvailable() || this.fitType == 1 && this.fitFillAvailable() || (this.fitType = 2)) {
+      this.fit();
     }
   }
 
-  function applyFit(n) {
-    if (fitType != n && (n == 0 && fitFitAvailable() || n == 1 && fitFillAvailable() || n == 2)) {
-      fitType = n;
+  static applyFit(n) {
+    if (this.fitType != n && (n == 0 && this.fitFitAvailable() || n == 1 && this.fitFillAvailable() || n == 2)) {
+      this.fitType = n;
 
-      fit();
-      scroll();
+      this.fit();
+      this.scroll();
     }
   }
 
-  function ratioCompare() {
+  static ratioCompare() {
     return Win.ratio < img.ratio;
   }
 
-  function fitFitAvailable() {
+  static fitFitAvailable() {
     return Win.isWider() || Win.isHigher();
   }
 
-  function fitFillAvailable() {
-    if (ratioCompare()) {
+  static fitFillAvailable() {
+    if (this.ratioCompare()) {
       return Win.height < img.fullHeight && Win.fullWidth < Math.floor(img.fullWidth * Win.height / img.fullHeight);
     } else {
       return Win.width < img.fullWidth && Win.fullHeight < Math.floor(img.fullHeight * Win.width / img.fullWidth);
     }
   }
 
-  function fit() {
-    switch (fitType) {
+  static fit() {
+    switch (this.fitType) {
       case 0:
-        fitFit();
+        this.fitFit();
 
         break;
 
       case 1:
-        fitFill();
+        this.fitFill();
 
         break;
 
       case 2:
-        fitNatural();
+        this.fitNatural();
 
         break;
     }
   }
 
-  function scroll() {
-    switch (fitType) {
+  static scroll() {
+    switch (this.fitType) {
       case 1:
         scrollTo(Pixels.toNumber((img.width - Win.fullWidth) / 2), Pixels.toNumber((img.height - Win.fullHeight) / 2));
 
@@ -215,58 +216,63 @@ class Img {
         break;
     }
   }
+}
 
 // Rotate
-  function rotateCW() {
+class Rotate {
+  static rotateCW() {
     img.orientation = (img.orientation + 1) % 4;
 
-    rotate();
+    this.rotate();
   }
 
-  function rotateCCW() {
+  static rotateCCW() {
     img.orientation = (img.orientation + 3) % 4;
 
-    rotate();
+    this.rotate();
   }
 
-  function rotate() {
+  static rotate() {
     img.node.className = `orientation-${img.orientation}`;
 
     img.horizontal = !img.horizontal; // img.orientation % 2
 
-    fitUpdate();
+    Fit.fitUpdate();
   }
+}
 
 // Move
-  let moveOffsetX;
-  let moveOffsetY;
+class Move {
+  static moveOffsetX;
+  static moveOffsetY;
 
-  function imgMovable(state) {
+  static imgMovable(state) {
     if (state) {
-      window.addEventListener('mousedown', onMouseDown);
+      window.addEventListener('mousedown', this.onMouseDown);
     } else {
-      window.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousedown', this.onMouseDown);
     }
   }
 
-  function onMouseDown(e) {
-    moveOffsetX = scrollX + e.clientX;
-    moveOffsetY = scrollY + e.clientY;
+  static onMouseDown = (e) => {
+    this.moveOffsetX = scrollX + e.clientX;
+    this.moveOffsetY = scrollY + e.clientY;
 
-    window.addEventListener('mouseup', onMouseUp);
-    window.addEventListener('mousemove', onMouseMove);
-  }
+    window.addEventListener('mouseup', this.onMouseUp);
+    window.addEventListener('mousemove', this.onMouseMove);
+  };
 
-  function onMouseUp() {
-    window.removeEventListener('mouseup', onMouseUp);
-    window.removeEventListener('mousemove', onMouseMove);
-  }
+  static onMouseUp = () => {
+    window.removeEventListener('mouseup', this.onMouseUp);
+    window.removeEventListener('mousemove', this.onMouseMove);
+  };
 
-  function onMouseMove(e) {
-    scrollTo(moveOffsetX - e.clientX, moveOffsetY - e.clientY);
+  static onMouseMove = (e) => {
+    scrollTo(this.moveOffsetX - e.clientX, this.moveOffsetY - e.clientY);
 
     e.preventDefault();
-  }
+  };
+}
 
 // Init
 let img;
@@ -277,9 +283,10 @@ function undoDefault() {
   img.node.width = img.node.naturalWidth;
   img.node.height = img.node.naturalHeight;
 
-  fitUpdate();
+  Fit.fitUpdate();
 }
 
+{
   // load style sync
   const xhr = new XMLHttpRequest();
   xhr.open('GET', chrome.runtime.getURL('style.css'), false);
@@ -297,17 +304,18 @@ function undoDefault() {
       img = new Img(document.body.firstChild);
 
       undoDefault();
-      applyFit(fitFitAvailable() ? 0 : 2);
+      Fit.applyFit(Fit.fitFitAvailable() ? 0 : 2);
 
       observer.disconnect();
     }
   });
   observer.observe(document.documentElement, {childList: true});
+}
 
 // Events
 window.addEventListener('DOMContentLoaded', undoDefault);
 window.addEventListener('resize', (e) => {
-  fitUpdate();
+  Fit.fitUpdate();
 
   e.stopImmediatePropagation();
 });
@@ -320,21 +328,21 @@ window.addEventListener('keydown', (e) => {
 
   if (e.shiftKey) {
     if (e.code === 'KeyR') {
-      rotateCCW();
+      Rotate.rotateCCW();
     }
   } else {
     switch (e.code) {
       case 'Digit1':
-        applyFit(2);
+        Fit.applyFit(2);
         break;
       case 'Digit2':
-        applyFit(1);
+        Fit.applyFit(1);
         break;
       case 'Digit3':
-        applyFit(0);
+        Fit.applyFit(0);
         break;
       case 'KeyR':
-        rotateCW();
+        Rotate.rotateCW();
         break;
     }
   }
