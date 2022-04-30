@@ -21,59 +21,61 @@ function ratioCompare() {
 }
 
 // Units
-const pixels = Object.seal({
-  parse: (value) => Math.round(value * devicePixelRatio),
-  toString: (value) => `${value / devicePixelRatio}px`,
-  toNumber: (value) => value / devicePixelRatio,
-});
+class Pixels {
+  parse = (value) => Math.round(value * devicePixelRatio);
+  toString = (value) => `${value / devicePixelRatio}px`;
+  toNumber = (value) => value / devicePixelRatio;
+}
+const pixels = new Pixels();
 
 // Window
-const win = Object.seal({
-  fullWidth_: undefined,
-  fullHeight_: undefined,
+class Win {
+  fullWidth_;
+  fullHeight_;
 
   get fullWidth() {
     return this.fullWidth_;
-  },
+  }
   get fullHeight() {
     return this.fullHeight_;
-  },
+  }
   get width() {
     return isHigher() ? this.fullWidth - scrollbarThickness : this.fullWidth;
-  },
+  }
   get height() {
     return isWider() ? this.fullHeight - scrollbarThickness : this.fullHeight;
-  },
+  }
   get ratio() {
     return this.fullWidth / this.fullHeight;
-  },
+  }
   calcSize() {
     document.body.style.overflow = 'hidden';
     this.fullWidth_ = pixels.parse(visualViewport.width);
     this.fullHeight_ = pixels.parse(visualViewport.height);
     document.body.style.overflow = '';
-  },
-});
+  }
+}
+const win = new Win();
 
 // Image
-const img = Object.seal({
-  horizontal: true, // is angle 0 or 180 degrees (angle / 180)
-  orientation: 0, // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
+class Img {
+  horizontal = true; // is angle 0 or 180 degrees (angle / 180)
+  orientation = 0; // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
 
-  width_: undefined,
-  height_: undefined,
-  node: undefined,
+  width_;
+  height_;
+  node;
 
   get fullWidth() {
     return this.horizontal ? this.node.naturalWidth : this.node.naturalHeight;
-  },
+  }
   get fullHeight() {
     return this.horizontal ? this.node.naturalHeight : this.node.naturalWidth;
-  },
+  }
 
   get width() {
     return this.horizontal ? this.width_ : this.height_;
-  },
+  }
   set width(value) {
     if (this.horizontal) {
       this.width_ = value;
@@ -82,10 +84,10 @@ const img = Object.seal({
       this.height_ = value;
       this.node.style.height = pixels.toString(value);
     }
-  },
+  }
   get height() {
     return this.horizontal ? this.height_ : this.width_;
-  },
+  }
   set height(value) {
     if (this.horizontal) {
       this.height_ = value;
@@ -94,18 +96,19 @@ const img = Object.seal({
       this.width_ = value;
       this.node.style.width = pixels.toString(value);
     }
-  },
+  }
   get ratio() {
     return this.fullWidth / this.fullHeight;
-  },
+  }
 
   set x(value) {
     this.node.style.left = pixels.toString(Math.max(value, 0));
-  },
+  }
   set y(value) {
     this.node.style.top = pixels.toString(Math.max(value, 0));
-  },
-});
+  }
+}
+const img = new Img();
 
 function imgMovable(state) {
   if (state) {
