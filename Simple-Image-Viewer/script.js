@@ -22,9 +22,15 @@ function ratioCompare() {
 
 // Units
 class Pixels {
-  parse = (value) => Math.round(value * devicePixelRatio);
-  toString = (value) => `${value / devicePixelRatio}px`;
-  toNumber = (value) => value / devicePixelRatio;
+  parse(value) {
+    return Math.round(value * devicePixelRatio);
+  }
+  toString(value) {
+    return `${value / devicePixelRatio}px`;
+  }
+  toNumber(value) {
+    return value / devicePixelRatio;
+  }
 }
 const pixels = new Pixels();
 
