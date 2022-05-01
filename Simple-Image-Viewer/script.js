@@ -15,8 +15,10 @@ class Pixels {
 
 // Window
 class Win {
-  /** @const @type {number} */
-  static SCROLLBAR_THICKNESS = 17;
+  /** @type {number} */
+  static scrollbarWidth;
+  /** @type {number} */
+  static scrollbarHeight;
   /** @private @type {number} */
   static fullWidth_;
   /** @private @type {number} */
@@ -29,10 +31,10 @@ class Win {
     return this.fullHeight_;
   }
   static get width() {
-    return this.isVerticalScrollbarVisible() ? this.fullWidth_ - this.SCROLLBAR_THICKNESS : this.fullWidth_;
+    return this.isVerticalScrollbarVisible() ? this.fullWidth_ - this.scrollbarWidth : this.fullWidth_;
   }
   static get height() {
-    return this.isHorizontalScrollbarVisible() ? this.fullHeight_ - this.SCROLLBAR_THICKNESS : this.fullHeight_;
+    return this.isHorizontalScrollbarVisible() ? this.fullHeight_ - this.scrollbarHeight : this.fullHeight_;
   }
   static get ratio() {
     return this.fullWidth_ / this.fullHeight_;
@@ -44,10 +46,16 @@ class Win {
     return this.fullHeight_ < img.fullHeight;
   }
   static calcSize() {
-    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     this.fullWidth_ = Pixels.parse(visualViewport.width);
     this.fullHeight_ = Pixels.parse(visualViewport.height);
-    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+  }
+  static calcScrollbarSize() {
+    document.documentElement.style.overflow = 'scroll';
+    this.scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    this.scrollbarHeight = window.innerHeight - document.documentElement.clientHeight;
+    document.documentElement.style.overflow = '';
   }
 }
 
@@ -189,6 +197,7 @@ class Fit {
 
   static update() {
     Win.calcSize();
+    Win.calcScrollbarSize();
 
     if (this.fittingType_ == FittingType.FIT && this.isFitAvailable() || this.fittingType_ == FittingType.FILL && this.isFillAvailable_() || (this.fittingType_ = FittingType.NONE)) {
       this.fit_();
@@ -290,6 +299,11 @@ class ViewportScroller {
 
   /** @private */
   static onMousedown_ = (/** @type {MouseEvent} */ e) => {
+    // respect active custom scrollbars
+    if (e.defaultPrevented) {
+      return;
+    }
+
     this.offsetX_ = window.scrollX + e.clientX;
     this.offsetY_ = window.scrollY + e.clientY;
 
