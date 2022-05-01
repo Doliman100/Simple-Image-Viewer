@@ -13,6 +13,7 @@
   "homepage_url": "https://github.com/Doliman100/Simple-Image-Viewer",
   "manifest_version": 2,
   "name": "Simple Image Viewer",
+  "offline_enabled": true,
   "permissions": ["management"],
   "version": "2.0",
   "web_accessible_resources": ["script.js", "style.css"]
