@@ -219,16 +219,15 @@ class Fit {
   }
 
   static isFitAvailable() {
-    return Win.isHorizontalScrollbarVisible() || Win.isVerticalScrollbarVisible();
+    return Win.fullWidth < img.fullWidth || Win.fullHeight < img.fullHeight;
   }
 
   /** @private */
   static isFillAvailable_() {
-    if (this.ratioCompare_()) {
-      return Win.height < img.fullHeight && Win.fullWidth < Math.floor(img.fullWidth * Win.height / img.fullHeight);
-    } else {
-      return Win.width < img.fullWidth && Win.fullHeight < Math.floor(img.fullHeight * Win.width / img.fullWidth);
-    }
+    return (Win.fullWidth - Win.scrollbarWidth) < img.fullWidth &&
+      Win.fullHeight < Math.floor((Win.fullWidth - Win.scrollbarWidth) * img.fullHeight / img.fullWidth) ||
+      (Win.fullHeight - Win.scrollbarHeight) < img.fullHeight &&
+      Win.fullWidth < Math.floor((Win.fullHeight - Win.scrollbarHeight) * img.fullWidth / img.fullHeight);
   }
 
   /** @private */
