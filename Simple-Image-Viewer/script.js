@@ -40,10 +40,10 @@ class Win {
     return this.fullWidth_ / this.fullHeight_;
   }
   static isHorizontalScrollbarVisible() {
-    return this.fullWidth_ < img.fullWidth;
+    return this.fullWidth_ < Math.round(img.width);
   }
   static isVerticalScrollbarVisible() {
-    return this.fullHeight_ < img.fullHeight;
+    return this.fullHeight_ < Math.round(img.height);
   }
   static calcSize() {
     document.documentElement.style.overflow = 'hidden';
@@ -156,45 +156,6 @@ class Fit {
   /** @private @type {symbol} */
   static fittingType_;
 
-  static fitFit() {
-    if (this.ratioCompare_()) {
-      img.width = Win.fullWidth;
-      img.height = img.width / img.ratio;
-    } else {
-      img.height = Win.fullHeight;
-      img.width = img.height * img.ratio;
-    }
-    img.x = (Win.fullWidth - img.width) / 2;
-    img.y = (Win.fullHeight - img.height) / 2;
-
-    ViewportScroller.setScrollable(false);
-  }
-
-  static fitFill() {
-    if (this.ratioCompare_()) {
-      img.height = Win.height;
-      img.width = img.height * img.ratio;
-    } else {
-      img.width = Win.width;
-      img.height = img.width / img.ratio;
-    }
-    img.x = 0;
-    img.y = 0;
-
-    ViewportScroller.setScrollable(true);
-  }
-
-  static fitNatural() {
-    img.width = img.fullWidth * window.devicePixelRatio;
-    img.height = img.fullHeight * window.devicePixelRatio;
-    img.x = (Win.width - img.width) / 2;
-    img.y = (Win.height - img.height) / 2;
-
-    if (this.isFitAvailable()) {
-      ViewportScroller.setScrollable(true);
-    }
-  }
-
   static update() {
     Win.calcSize();
     Win.calcScrollbarSize();
@@ -211,11 +172,6 @@ class Fit {
       this.fit_();
       this.scroll_();
     }
-  }
-
-  /** @private */
-  static ratioCompare_() {
-    return Win.ratio < img.ratio;
   }
 
   /** @private */
@@ -258,37 +214,39 @@ class Fit {
 
   /** @private */
   static fit_() {
+    let zoomFactor;
     switch (this.fittingType_) {
       case FittingType.FIT:
-        this.fitFit();
+        zoomFactor = this.isFitHeightAvailable_() ?
+          Win.fullHeight / img.fullHeight :
+          Win.fullWidth / img.fullWidth;
 
         break;
 
       case FittingType.FILL:
-        this.fitFill();
+        zoomFactor = this.isFillHeightAvailable_() ?
+          (Win.fullHeight - Win.scrollbarHeight) / img.fullHeight :
+          (Win.fullWidth - Win.scrollbarWidth) / img.fullWidth;
 
         break;
 
       case FittingType.NONE:
-        this.fitNatural();
+        zoomFactor = 1;
 
         break;
     }
+
+    img.width = img.fullWidth * zoomFactor;
+    img.height = img.fullHeight * zoomFactor;
+    img.x = (Win.width - img.width) / 2;
+    img.y = (Win.height - img.height) / 2;
+
+    ViewportScroller.setScrollable(Win.isHorizontalScrollbarVisible() || Win.isVerticalScrollbarVisible());
   }
 
   /** @private */
   static scroll_() {
-    switch (this.fittingType_) {
-      case FittingType.FILL:
-        window.scrollTo(Pixels.toNumber((img.width - Win.fullWidth) / 2), Pixels.toNumber((img.height - Win.fullHeight) / 2));
-
-        break;
-
-      case FittingType.NONE:
-        window.scrollTo(Pixels.toNumber((img.fullWidth - Win.width) / 2), Pixels.toNumber((img.fullHeight - Win.height) / 2));
-
-        break;
-    }
+    window.scrollTo(Pixels.toNumber((img.width - Win.width) / 2), Pixels.toNumber((img.height - Win.height) / 2));
   }
 }
 
