@@ -353,7 +353,7 @@ function undoDefault() {
 
   const observer = new MutationObserver(() => {
     if (document.body) {
-      img = new Img(/** @type {HTMLImageElement} */ (document.body.firstChild));
+      img = new Img(/** @type {HTMLImageElement} */ (document.body.firstElementChild));
 
       undoDefault();
       Fit.applyFit(Fit.isFitAvailable() ? FittingType.FIT : FittingType.NONE);
