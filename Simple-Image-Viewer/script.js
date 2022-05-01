@@ -218,16 +218,42 @@ class Fit {
     return Win.ratio < img.ratio;
   }
 
+  /** @private */
+  static isFitHeightAvailable_() {
+    return Win.fullWidth > Math.round(Win.fullHeight * img.fullWidth / img.fullHeight);
+
+    // height = winHeight
+    // width = winHeight * imgWidth / imgHeight
+    // winWidth > width
+
+    // winWidth / winHeight > imgWidth / imgHeight
+  }
+
   static isFitAvailable() {
     return Win.fullWidth < img.fullWidth || Win.fullHeight < img.fullHeight;
   }
 
   /** @private */
+  static isFillWidthAvailable_() {
+    return Win.fullWidth - Win.scrollbarWidth < img.fullWidth &&
+      Win.fullHeight < Math.round((Win.fullWidth - Win.scrollbarWidth) * img.fullHeight / img.fullWidth);
+  }
+
+  /** @private */
+  static isFillHeightAvailable_() {
+    return Win.fullHeight - Win.scrollbarHeight < img.fullHeight &&
+      Win.fullWidth < Math.round((Win.fullHeight - Win.scrollbarHeight) * img.fullWidth / img.fullHeight);
+
+    // height = winHeight - 17
+    // width = (winHeight - 17) * imgWidth / imgHeight
+    // winWidth < width
+
+    // winWidth / (winHeight - 17) < imgWidth / imgHeight
+  }
+
+  /** @private */
   static isFillAvailable_() {
-    return (Win.fullWidth - Win.scrollbarWidth) < img.fullWidth &&
-      Win.fullHeight < Math.floor((Win.fullWidth - Win.scrollbarWidth) * img.fullHeight / img.fullWidth) ||
-      (Win.fullHeight - Win.scrollbarHeight) < img.fullHeight &&
-      Win.fullWidth < Math.floor((Win.fullHeight - Win.scrollbarHeight) * img.fullWidth / img.fullHeight);
+    return this.isFillWidthAvailable_() || this.isFillHeightAvailable_();
   }
 
   /** @private */
