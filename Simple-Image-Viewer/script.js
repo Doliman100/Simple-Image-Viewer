@@ -53,15 +53,23 @@ class Img {
   element; // image_element_
   width_;
   height_;
-  orientation = 0; // angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
-  horizontal = true; // is angle 0 or 180 degrees (orientation % 2 === 0)
+  /**
+   * angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
+   * @private @type {number}
+   */
+  orientation_;
+  /**
+   * is angle 0 or 180 degrees
+   * @private @type {boolean}
+   */
+  horizontal_;
 
   constructor(element) {
     if (element instanceof HTMLImageElement === false) {
       throw new TypeError('Failed to construct \'Img\': parameter 1 is not of type \'HTMLImageElement\'.');
     }
     this.element = element;
-    this.element.className = 'orientation-0';
+    this.orientation = 0;
     this.element.addEventListener('click', (e) => e.stopPropagation(), true);
   }
 
@@ -73,17 +81,17 @@ class Img {
   }
 
   get fullWidth() {
-    return this.horizontal ? this.element.naturalWidth : this.element.naturalHeight;
+    return this.horizontal_ ? this.element.naturalWidth : this.element.naturalHeight;
   }
   get fullHeight() {
-    return this.horizontal ? this.element.naturalHeight : this.element.naturalWidth;
+    return this.horizontal_ ? this.element.naturalHeight : this.element.naturalWidth;
   }
 
   get width() {
-    return this.horizontal ? this.width_ : this.height_;
+    return this.horizontal_ ? this.width_ : this.height_;
   }
   set width(value) {
-    if (this.horizontal) {
+    if (this.horizontal_) {
       this.width_ = value;
       this.element.style.width = Pixels.toString(value);
     } else {
@@ -92,10 +100,10 @@ class Img {
     }
   }
   get height() {
-    return this.horizontal ? this.height_ : this.width_;
+    return this.horizontal_ ? this.height_ : this.width_;
   }
   set height(value) {
-    if (this.horizontal) {
+    if (this.horizontal_) {
       this.height_ = value;
       this.element.style.height = Pixels.toString(value);
     } else {
@@ -105,6 +113,15 @@ class Img {
   }
   get ratio() {
     return this.fullWidth / this.fullHeight;
+  }
+
+  get orientation() {
+    return this.orientation_;
+  }
+  set orientation(value) {
+    this.orientation_ = value;
+    this.horizontal_ = value % 2 === 0;
+    this.element.className = `orientation-${value}`;
   }
 }
 
@@ -234,20 +251,13 @@ class Fit {
 // Rotate
 class Rotate {
   static cw() {
-    img.orientation = (img.orientation + 1) % 4;
-
-    this.do_();
+    this.do_(img.orientation + 1);
   }
   static ccw() {
-    img.orientation = (img.orientation + 3) % 4;
-
-    this.do_();
+    this.do_(img.orientation + 3);
   }
-  static do_() {
-    img.element.className = `orientation-${img.orientation}`;
-
-    img.horizontal = !img.horizontal; // img.orientation % 2
-
+  static do_(orientation) {
+    img.orientation = orientation % 4;
     Fit.update();
   }
 }
