@@ -109,8 +109,18 @@ class Img {
 }
 
 // Fit
+/** @enum {symbol} */
+const FittingType = {
+  FIT: Symbol('fit'),
+  /** Cover */
+  FILL: Symbol('fill'),
+  /** Actual size */
+  NONE: Symbol('none'),
+};
+
 class Fit {
-  static fittingType_; // 0 = fit, 1 = fill, 2 = natural
+  /** @private @type {symbol} */
+  static fittingType_;
 
   static fitFit() {
     if (this.ratioCompare_()) {
@@ -154,13 +164,16 @@ class Fit {
   static update() {
     Win.calcSize();
 
-    if (this.fittingType_ == 0 && this.isFitAvailable() || this.fittingType_ == 1 && this.isFillAvailable_() || (this.fittingType_ = 2)) {
+    if (this.fittingType_ == FittingType.FIT && this.isFitAvailable() || this.fittingType_ == FittingType.FILL && this.isFillAvailable_() || (this.fittingType_ = FittingType.NONE)) {
       this.fit_();
     }
   }
 
+  /**
+   * @param {symbol} fittingType
+   */
   static applyFit(fittingType) {
-    if (this.fittingType_ != fittingType && (fittingType == 0 && this.isFitAvailable() || fittingType == 1 && this.isFillAvailable_() || fittingType == 2)) {
+    if (this.fittingType_ != fittingType && (fittingType == FittingType.FIT && this.isFitAvailable() || fittingType == FittingType.FILL && this.isFillAvailable_() || fittingType == FittingType.NONE)) {
       this.fittingType_ = fittingType;
 
       this.fit_();
@@ -186,17 +199,17 @@ class Fit {
 
   static fit_() {
     switch (this.fittingType_) {
-      case 0:
+      case FittingType.FIT:
         this.fitFit();
 
         break;
 
-      case 1:
+      case FittingType.FILL:
         this.fitFill();
 
         break;
 
-      case 2:
+      case FittingType.NONE:
         this.fitNatural();
 
         break;
@@ -205,12 +218,12 @@ class Fit {
 
   static scroll_() {
     switch (this.fittingType_) {
-      case 1:
+      case FittingType.FILL:
         window.scrollTo(Pixels.toNumber((img.width - Win.fullWidth) / 2), Pixels.toNumber((img.height - Win.fullHeight) / 2));
 
         break;
 
-      case 2:
+      case FittingType.NONE:
         window.scrollTo(Pixels.toNumber((img.fullWidth - Win.width) / 2), Pixels.toNumber((img.fullHeight - Win.height) / 2));
 
         break;
@@ -302,7 +315,7 @@ function undoDefault() {
       img = new Img(document.body.firstChild);
 
       undoDefault();
-      Fit.applyFit(Fit.isFitAvailable() ? 0 : 2);
+      Fit.applyFit(Fit.isFitAvailable() ? FittingType.FIT : FittingType.NONE);
 
       observer.disconnect();
     }
@@ -331,13 +344,13 @@ window.addEventListener('keydown', (e) => {
   } else {
     switch (e.code) {
       case 'Digit1':
-        Fit.applyFit(2);
+        Fit.applyFit(FittingType.NONE);
         break;
       case 'Digit2':
-        Fit.applyFit(1);
+        Fit.applyFit(FittingType.FILL);
         break;
       case 'Digit3':
-        Fit.applyFit(0);
+        Fit.applyFit(FittingType.FIT);
         break;
       case 'KeyR':
         Rotate.cw();
