@@ -2,21 +2,24 @@
 
 // Units
 class Pixels {
-  static parse(value) {
+  static parse(/** @type {number} */ value) {
     return Math.round(value * window.devicePixelRatio);
   }
-  static toNumber(value) {
+  static toNumber(/** @type {number} */ value) {
     return value / window.devicePixelRatio;
   }
-  static toString(value) {
+  static toString(/** @type {number} */ value) {
     return `${value / window.devicePixelRatio}px`;
   }
 }
 
 // Window
 class Win {
+  /** @const @type {number} */
   static SCROLLBAR_THICKNESS = 17;
+  /** @private @type {number} */
   static fullWidth_;
+  /** @private @type {number} */
   static fullHeight_;
 
   static get fullWidth() {
@@ -50,8 +53,14 @@ class Win {
 
 // Image
 class Img {
-  element; // image_element_
+  /**
+   * image_element_
+   * @type {HTMLImageElement}
+   */
+  element;
+  /** @private @type {number} */
   width_;
+  /** @private @type {number} */
   height_;
   /**
    * angle / 90 (0 = 0, 1 = 90, 2 = 180, 3 = 270)
@@ -64,7 +73,7 @@ class Img {
    */
   horizontal_;
 
-  constructor(element) {
+  constructor(/** @type {HTMLImageElement} */ element) {
     if (element instanceof HTMLImageElement === false) {
       throw new TypeError('Failed to construct \'Img\': parameter 1 is not of type \'HTMLImageElement\'.');
     }
@@ -73,10 +82,10 @@ class Img {
     this.element.addEventListener('click', (e) => e.stopPropagation(), true);
   }
 
-  set x(value) {
+  set x(/** @type {number} */ value) {
     this.element.style.left = Pixels.toString(Math.max(value, 0));
   }
-  set y(value) {
+  set y(/** @type {number} */ value) {
     this.element.style.top = Pixels.toString(Math.max(value, 0));
   }
 
@@ -186,10 +195,7 @@ class Fit {
     }
   }
 
-  /**
-   * @param {symbol} fittingType
-   */
-  static applyFit(fittingType) {
+  static applyFit(/** @type {symbol} */ fittingType) {
     if (this.fittingType_ != fittingType && (fittingType == FittingType.FIT && this.isFitAvailable() || fittingType == FittingType.FILL && this.isFillAvailable_() || fittingType == FittingType.NONE)) {
       this.fittingType_ = fittingType;
 
@@ -198,6 +204,7 @@ class Fit {
     }
   }
 
+  /** @private */
   static ratioCompare_() {
     return Win.ratio < img.ratio;
   }
@@ -206,6 +213,7 @@ class Fit {
     return Win.isHorizontalScrollbarVisible() || Win.isVerticalScrollbarVisible();
   }
 
+  /** @private */
   static isFillAvailable_() {
     if (this.ratioCompare_()) {
       return Win.height < img.fullHeight && Win.fullWidth < Math.floor(img.fullWidth * Win.height / img.fullHeight);
@@ -214,6 +222,7 @@ class Fit {
     }
   }
 
+  /** @private */
   static fit_() {
     switch (this.fittingType_) {
       case FittingType.FIT:
@@ -233,6 +242,7 @@ class Fit {
     }
   }
 
+  /** @private */
   static scroll_() {
     switch (this.fittingType_) {
       case FittingType.FILL:
@@ -256,7 +266,8 @@ class Rotate {
   static ccw() {
     this.do_(img.orientation + 3);
   }
-  static do_(orientation) {
+  /** @private */
+  static do_(/** @type {number} */ orientation) {
     img.orientation = orientation % 4;
     Fit.update();
   }
@@ -264,10 +275,12 @@ class Rotate {
 
 // Move
 class ViewportScroller {
+  /** @private @type {number} */
   static offsetX_;
+  /** @private @type {number} */
   static offsetY_;
 
-  static setScrollable(value) {
+  static setScrollable(/** @type {boolean} */ value) {
     if (value) {
       window.addEventListener('mousedown', this.onMousedown_);
     } else {
@@ -275,7 +288,8 @@ class ViewportScroller {
     }
   }
 
-  static onMousedown_ = (e) => {
+  /** @private */
+  static onMousedown_ = (/** @type {MouseEvent} */ e) => {
     this.offsetX_ = window.scrollX + e.clientX;
     this.offsetY_ = window.scrollY + e.clientY;
 
@@ -283,12 +297,14 @@ class ViewportScroller {
     window.addEventListener('mousemove', this.onMousemove_);
   };
 
+  /** @private */
   static onMouseup_ = () => {
     window.removeEventListener('mouseup', this.onMouseup_);
     window.removeEventListener('mousemove', this.onMousemove_);
   };
 
-  static onMousemove_ = (e) => {
+  /** @private */
+  static onMousemove_ = (/** @type {MouseEvent} */ e) => {
     window.scrollTo(this.offsetX_ - e.clientX, this.offsetY_ - e.clientY);
 
     e.preventDefault();
@@ -296,6 +312,7 @@ class ViewportScroller {
 }
 
 // Init
+/** @type {Img} */
 let img;
 
 function undoDefault() {
@@ -322,7 +339,7 @@ function undoDefault() {
 
   const observer = new MutationObserver(() => {
     if (document.body) {
-      img = new Img(document.body.firstChild);
+      img = new Img(/** @type {HTMLImageElement} */ (document.body.firstChild));
 
       undoDefault();
       Fit.applyFit(Fit.isFitAvailable() ? FittingType.FIT : FittingType.NONE);
