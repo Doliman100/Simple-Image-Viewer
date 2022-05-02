@@ -317,8 +317,6 @@ function undoDefault() {
   img.element.style.cursor = '';
   img.element.width = img.element.naturalWidth;
   img.element.height = img.element.naturalHeight;
-
-  Fit.update();
 }
 
 {
@@ -348,7 +346,10 @@ function undoDefault() {
 }
 
 // Events
-window.addEventListener('DOMContentLoaded', undoDefault);
+window.addEventListener('DOMContentLoaded', () => {
+  undoDefault();
+  Fit.update();
+});
 window.addEventListener('resize', (e) => {
   Fit.update();
 
