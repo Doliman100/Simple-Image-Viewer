@@ -157,16 +157,18 @@ class Fit {
   static fittingType_;
 
   static update() {
-    if (this.fittingType_ == FittingType.FIT && this.isFitAvailable() || this.fittingType_ == FittingType.FILL && this.isFillAvailable_() || (this.fittingType_ = FittingType.NONE)) {
-      this.fit_();
+    let fittingType = this.fittingType_;
+    if (fittingType === FittingType.FIT && !this.isFitAvailable() || fittingType === FittingType.FILL && !this.isFillAvailable_()) {
+      fittingType = FittingType.NONE;
     }
+    this.fit_(fittingType);
   }
 
   static applyFit(/** @type {symbol} */ fittingType) {
-    if (this.fittingType_ != fittingType && (fittingType == FittingType.FIT && this.isFitAvailable() || fittingType == FittingType.FILL && this.isFillAvailable_() || fittingType == FittingType.NONE)) {
+    if (this.fittingType_ != fittingType) {
       this.fittingType_ = fittingType;
 
-      this.fit_();
+      this.update();
       this.scroll_();
     }
   }
@@ -210,9 +212,9 @@ class Fit {
   }
 
   /** @private */
-  static fit_() {
+  static fit_(/** @type {Symbol} */ fittingType) {
     let zoomFactor;
-    switch (this.fittingType_) {
+    switch (fittingType) {
       case FittingType.FIT:
         zoomFactor = this.isFitHeightAvailable_() ?
           Win.fullHeight / img.fullHeight :
@@ -336,7 +338,7 @@ function undoDefault() {
       undoDefault();
       Win.calcSize();
       Win.calcScrollbarSize();
-      Fit.applyFit(Fit.isFitAvailable() ? FittingType.FIT : FittingType.NONE);
+      Fit.applyFit(FittingType.FIT);
 
       observer.disconnect();
     }
