@@ -150,6 +150,8 @@ const FittingType = {
   FILL: Symbol('fill'),
   /** Actual size */
   NONE: Symbol('none'),
+  /** Fit up to 100% */
+  INITIAL: Symbol('initial'),
 };
 
 class Fit {
@@ -158,8 +160,8 @@ class Fit {
 
   static update() {
     let fittingType = this.fittingType_;
-    if (fittingType === FittingType.FIT && !this.isFitAvailable() || fittingType === FittingType.FILL && !this.isFillAvailable_()) {
-      fittingType = FittingType.NONE;
+    if (fittingType === FittingType.INITIAL && this.isFitAvailable() || fittingType === FittingType.FILL && !this.isFillAvailable_()) {
+      fittingType = FittingType.FIT;
     }
     this.fit_(fittingType);
   }
@@ -190,14 +192,12 @@ class Fit {
 
   /** @private */
   static isFillWidthAvailable_() {
-    return Win.fullWidth - Win.scrollbarWidth < img.fullWidth &&
-      Win.fullHeight < Math.round((Win.fullWidth - Win.scrollbarWidth) * img.fullHeight / img.fullWidth);
+    return Win.fullHeight < Math.round((Win.fullWidth - Win.scrollbarWidth) * img.fullHeight / img.fullWidth);
   }
 
   /** @private */
   static isFillHeightAvailable_() {
-    return Win.fullHeight - Win.scrollbarHeight < img.fullHeight &&
-      Win.fullWidth < Math.round((Win.fullHeight - Win.scrollbarHeight) * img.fullWidth / img.fullHeight);
+    return Win.fullWidth < Math.round((Win.fullHeight - Win.scrollbarHeight) * img.fullWidth / img.fullHeight);
 
     // height = winHeight - 17
     // width = (winHeight - 17) * imgWidth / imgHeight
@@ -212,26 +212,22 @@ class Fit {
   }
 
   /** @private */
-  static fit_(/** @type {Symbol} */ fittingType) {
+  static fit_(/** @type {symbol} */ fittingType) {
     let zoomFactor;
     switch (fittingType) {
       case FittingType.FIT:
         zoomFactor = this.isFitHeightAvailable_() ?
           Win.fullHeight / img.fullHeight :
           Win.fullWidth / img.fullWidth;
-
         break;
-
       case FittingType.FILL:
         zoomFactor = this.isFillHeightAvailable_() ?
           (Win.fullHeight - Win.scrollbarHeight) / img.fullHeight :
           (Win.fullWidth - Win.scrollbarWidth) / img.fullWidth;
-
         break;
-
+      case FittingType.INITIAL:
       case FittingType.NONE:
         zoomFactor = 1;
-
         break;
     }
 
@@ -338,7 +334,7 @@ function undoDefault() {
       undoDefault();
       Win.calcSize();
       Win.calcScrollbarSize();
-      Fit.applyFit(FittingType.FIT);
+      Fit.applyFit(FittingType.INITIAL);
 
       observer.disconnect();
     }
