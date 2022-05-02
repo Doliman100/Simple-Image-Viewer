@@ -157,13 +157,25 @@ const FittingType = {
 class Fit {
   /** @private @type {symbol} */
   static fittingType_;
+  /** @private @type {number} */
+  static zoomFactor_;
+
+  static applyZoomFactor() {
+    img.width = img.fullWidth * this.zoomFactor_;
+    img.height = img.fullHeight * this.zoomFactor_;
+    img.x = (Win.width - img.width) / 2;
+    img.y = (Win.height - img.height) / 2;
+
+    ViewportScroller.setScrollable(Win.isHorizontalScrollbarVisible() || Win.isVerticalScrollbarVisible());
+  }
 
   static update() {
     let fittingType = this.fittingType_;
     if (fittingType === FittingType.INITIAL && this.isFitAvailable() || fittingType === FittingType.FILL && !this.isFillAvailable_()) {
       fittingType = FittingType.FIT;
     }
-    this.fit_(fittingType);
+    this.calcZoomFactor_(fittingType);
+    this.applyZoomFactor();
   }
 
   static applyFit(/** @type {symbol} */ fittingType) {
@@ -212,31 +224,23 @@ class Fit {
   }
 
   /** @private */
-  static fit_(/** @type {symbol} */ fittingType) {
-    let zoomFactor;
+  static calcZoomFactor_(/** @type {symbol} */ fittingType) {
     switch (fittingType) {
       case FittingType.FIT:
-        zoomFactor = this.isFitHeightAvailable_() ?
+        this.zoomFactor_ = this.isFitHeightAvailable_() ?
           Win.fullHeight / img.fullHeight :
           Win.fullWidth / img.fullWidth;
         break;
       case FittingType.FILL:
-        zoomFactor = this.isFillHeightAvailable_() ?
+        this.zoomFactor_ = this.isFillHeightAvailable_() ?
           (Win.fullHeight - Win.scrollbarHeight) / img.fullHeight :
           (Win.fullWidth - Win.scrollbarWidth) / img.fullWidth;
         break;
       case FittingType.INITIAL:
       case FittingType.NONE:
-        zoomFactor = 1;
+        this.zoomFactor_ = 1;
         break;
     }
-
-    img.width = img.fullWidth * zoomFactor;
-    img.height = img.fullHeight * zoomFactor;
-    img.x = (Win.width - img.width) / 2;
-    img.y = (Win.height - img.height) / 2;
-
-    ViewportScroller.setScrollable(Win.isHorizontalScrollbarVisible() || Win.isVerticalScrollbarVisible());
   }
 
   /** @private */
@@ -345,7 +349,7 @@ function undoDefault() {
 // Events
 window.addEventListener('DOMContentLoaded', () => {
   undoDefault();
-  Fit.update();
+  Fit.applyZoomFactor();
 });
 window.addEventListener('resize', (e) => {
   Win.calcSize();
