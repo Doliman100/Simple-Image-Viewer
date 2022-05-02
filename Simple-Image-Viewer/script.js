@@ -157,9 +157,6 @@ class Fit {
   static fittingType_;
 
   static update() {
-    Win.calcSize();
-    Win.calcScrollbarSize();
-
     if (this.fittingType_ == FittingType.FIT && this.isFitAvailable() || this.fittingType_ == FittingType.FILL && this.isFillAvailable_() || (this.fittingType_ = FittingType.NONE)) {
       this.fit_();
     }
@@ -337,6 +334,8 @@ function undoDefault() {
       img = new Img(/** @type {HTMLImageElement} */ (document.body.firstElementChild));
 
       undoDefault();
+      Win.calcSize();
+      Win.calcScrollbarSize();
       Fit.applyFit(Fit.isFitAvailable() ? FittingType.FIT : FittingType.NONE);
 
       observer.disconnect();
@@ -351,6 +350,7 @@ window.addEventListener('DOMContentLoaded', () => {
   Fit.update();
 });
 window.addEventListener('resize', (e) => {
+  Win.calcSize();
   Fit.update();
 
   e.stopImmediatePropagation();
