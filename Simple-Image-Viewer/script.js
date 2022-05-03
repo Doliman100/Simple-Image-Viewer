@@ -179,6 +179,11 @@ class Fit {
   /** @private @type {number} */
   static zoomFactor_;
 
+  static set fittingType(/** @type {FittingType} */ value) {
+    this.fittingType_ = value;
+    this.update();
+  }
+
   static applyZoomFactor() {
     img.width = img.fullWidth * this.zoomFactor_;
     img.height = img.fullHeight * this.zoomFactor_;
@@ -203,9 +208,7 @@ class Fit {
     }
 
     this.transformToCenter(() => {
-      this.fittingType_ = fittingType;
-
-      this.update();
+      this.fittingType = fittingType;
     });
   }
 
@@ -393,7 +396,7 @@ function undoDefault() {
       undoDefault();
       Win.calcSize();
       Win.calcScrollbarSize();
-      Fit.applyFit(FittingType.INITIAL);
+      Fit.fittingType = FittingType.INITIAL;
 
       observer.disconnect();
     }
