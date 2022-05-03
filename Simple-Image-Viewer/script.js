@@ -39,12 +39,25 @@ class Win {
   static get ratio() {
     return this.fullWidth_ / this.fullHeight_;
   }
+
+  static get scrollX() {
+    return img.x;
+  }
+  static get scrollY() {
+    return img.y;
+  }
+
   static isHorizontalScrollbarVisible() {
     return this.fullWidth_ < Math.round(img.width);
   }
   static isVerticalScrollbarVisible() {
     return this.fullHeight_ < Math.round(img.height);
   }
+
+  static scrollTo(/** @type {number} */ x, /** @type {number} */ y) {
+    window.scrollTo(Pixels.toNumber(x), Pixels.toNumber(y));
+  }
+
   static calcSize() {
     document.documentElement.style.overflow = 'hidden';
     this.fullWidth_ = Pixels.parse(visualViewport.width);
@@ -90,10 +103,16 @@ class Img {
     this.element.addEventListener('click', (e) => e.stopPropagation(), true);
   }
 
-  set x(/** @type {number} */ value) {
+  get x() {
+    return -this.element.x;
+  }
+  set x(value) {
     this.element.style.left = Pixels.toString(Math.max(value, 0));
   }
-  set y(/** @type {number} */ value) {
+  get y() {
+    return -this.element.y;
+  }
+  set y(value) {
     this.element.style.top = Pixels.toString(Math.max(value, 0));
   }
 
@@ -179,12 +198,19 @@ class Fit {
   }
 
   static applyFit(/** @type {symbol} */ fittingType) {
-    if (this.fittingType_ != fittingType) {
+    if (this.fittingType_ === fittingType) {
+      return;
+    }
+
+    this.transformToCenter(() => {
       this.fittingType_ = fittingType;
 
       this.update();
-      this.scroll_();
-    }
+    });
+  }
+
+  static transformToCenter(/** @type {() => void} */ f) {
+    this.transformTo_(f, () => [Win.width / 2, Win.height / 2]);
   }
 
   /** @private */
@@ -243,9 +269,36 @@ class Fit {
     }
   }
 
-  /** @private */
-  static scroll_() {
-    window.scrollTo(Pixels.toNumber((img.width - Win.width) / 2), Pixels.toNumber((img.height - Win.height) / 2));
+  /**
+   * Keep window point during transformation
+   * @private
+   */
+  static transformTo_(/** @type {() => void} */ f, /** @type {() => [number, number]} */ getInner) {
+    // scrollX + innerX = x (point on image)
+
+    let inner = getInner();
+    let scrollX = Win.scrollX;
+    let scrollY = Win.scrollY;
+    let x = (scrollX + inner[0]) / this.zoomFactor_;
+    let y = (scrollY + inner[1]) / this.zoomFactor_;
+
+    const x0 = x - img.fullWidth / 2;
+    const y0 = y - img.fullHeight / 2;
+    const orientation = (4 - img.orientation) % 4; // -a
+
+    f();
+
+    const ang = (img.orientation + orientation) * Math.PI / 2; // (b + (-a)) % 4
+    const sin = Math.sin(ang);
+    const cos = Math.cos(ang);
+    x = x0 * cos - y0 * sin + img.fullWidth / 2;
+    y = x0 * sin + y0 * cos + img.fullHeight / 2;
+
+    inner = getInner();
+    scrollX = x * this.zoomFactor_ - inner[0];
+    scrollY = y * this.zoomFactor_ - inner[1];
+
+    Win.scrollTo(scrollX, scrollY);
   }
 }
 
@@ -259,8 +312,10 @@ class Rotate {
   }
   /** @private */
   static do_(/** @type {number} */ orientation) {
-    img.orientation = orientation % 4;
-    Fit.update();
+    Fit.transformToCenter(() => {
+      img.orientation = orientation % 4;
+      Fit.update();
+    });
   }
 }
 
@@ -352,8 +407,10 @@ window.addEventListener('DOMContentLoaded', () => {
   Fit.applyZoomFactor();
 });
 window.addEventListener('resize', (e) => {
-  Win.calcSize();
-  Fit.update();
+  Fit.transformToCenter(() => {
+    Win.calcSize();
+    Fit.update();
+  });
 
   e.stopImmediatePropagation();
 });
