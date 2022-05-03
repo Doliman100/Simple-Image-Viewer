@@ -23,6 +23,16 @@ class Win {
   static fullWidth_;
   /** @private @type {number} */
   static fullHeight_;
+  /**
+  * fractional part
+  * @private @type {number}
+  */
+  static scrollXF_ = 0;
+  /**
+  * fractional part
+  * @private @type {number}
+  */
+  static scrollYF_ = 0;
 
   static get fullWidth() {
     return this.fullWidth_;
@@ -41,10 +51,10 @@ class Win {
   }
 
   static get scrollX() {
-    return img.x;
+    return img.x + this.scrollXF_;
   }
   static get scrollY() {
-    return img.y;
+    return img.y + this.scrollYF_;
   }
 
   static isHorizontalScrollbarVisible() {
@@ -55,7 +65,19 @@ class Win {
   }
 
   static scrollTo(/** @type {number} */ x, /** @type {number} */ y) {
-    window.scrollTo(Pixels.toNumber(x), Pixels.toNumber(y));
+    // window.scrollTo internally uses fp32
+    // window.scrollX/Y returns an integer multiplied by dpi
+
+    const scrollX = Pixels.toNumber(x);
+    const scrollY = Pixels.toNumber(y);
+
+    const internalScrollX = Math.trunc(Math.fround(scrollX));
+    const internalScrollY = Math.trunc(Math.fround(scrollY));
+
+    window.scrollTo(internalScrollX, internalScrollY);
+
+    this.scrollXF_ = scrollX - internalScrollX;
+    this.scrollYF_ = scrollY - internalScrollY;
   }
 
   static calcSize() {
