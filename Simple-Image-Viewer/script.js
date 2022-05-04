@@ -189,7 +189,7 @@ const FittingType = {
   FIT: Symbol('fit'),
   /** Cover */
   FILL: Symbol('fill'),
-  /** Actual size */
+  /** Custom zoom factor */
   NONE: Symbol('none'),
   /** Fit up to 100% */
   INITIAL: Symbol('initial'),
@@ -234,6 +234,10 @@ class Fit {
 
   static transformToCenter(/** @type {() => void} */ f) {
     this.transformTo_(f, () => [Win.width / 2, Win.height / 2]);
+  }
+
+  static zoomToCenter(/** @type {number} */ factor) {
+    this.transformToCenter(() => this.zoomTo_(factor));
   }
 
   /** @private */
@@ -286,7 +290,6 @@ class Fit {
           (Win.fullWidth - Win.scrollbarWidth) / img.fullWidth;
         break;
       case FittingType.INITIAL:
-      case FittingType.NONE:
         Zoom.factor = 1;
         break;
     }
@@ -322,6 +325,12 @@ class Fit {
     scrollY = y * Zoom.factor - inner[1];
 
     Win.scrollTo(scrollX, scrollY);
+  }
+
+  /** @private */
+  static zoomTo_(/** @type {number} */ factor) {
+    Zoom.factor = factor;
+    this.fittingType = FittingType.NONE;
   }
 }
 
@@ -482,6 +491,13 @@ function undoDefault() {
   observer.observe(document.documentElement, {childList: true});
 }
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (!Zoom.changingBrowserZoom && !Zoom.changingBrowserZoomMode) {
+    Fit.zoomToCenter(message);
+  }
+  sendResponse();
+});
+
 // Events
 window.addEventListener('DOMContentLoaded', () => {
   undoDefault();
@@ -509,7 +525,7 @@ window.addEventListener('keydown', (e) => {
   } else {
     switch (e.code) {
       case 'Digit1':
-        Fit.applyFit(FittingType.NONE);
+        Fit.zoomToCenter(1);
         break;
       case 'Digit2':
         Fit.applyFit(FittingType.FILL);
