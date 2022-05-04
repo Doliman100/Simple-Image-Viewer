@@ -235,9 +235,15 @@ class Fit {
   static transformToCenter(/** @type {() => void} */ f) {
     this.transformTo_(f, () => [Win.width / 2, Win.height / 2]);
   }
+  static transformToCursor(/** @type {() => void} */ f, /** @type {MouseEvent} */ e) {
+    this.transformTo_(f, () => [e.clientX, e.clientY]);
+  }
 
   static zoomToCenter(/** @type {number} */ factor) {
     this.transformToCenter(() => this.zoomTo_(factor));
+  }
+  static zoomToCursor(/** @type {number} */ factor, /** @type {MouseEvent} */ e) {
+    this.transformToCursor(() => this.zoomTo_(factor), e);
   }
 
   /** @private */
@@ -338,6 +344,15 @@ class Fit {
 class Zoom {
   static changingBrowserZoomMode = false;
   static changingBrowserZoom = false;
+  /** @type {number} */
+  static min;
+  /** @type {number} */
+  static max;
+  /**
+   * https://source.chromium.org/chromium/chromium/src/+/main:components/zoom/page_zoom_constants.cc
+   * @private @const @type {number[]}
+   */
+  static PRESET_ZOOM_FACTORS = [0.25, 1 / 3, 0.5, 2 / 3, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5];
   /** @private @type {number} */
   static factor_;
   // /** @private @type {number} */
@@ -346,6 +361,9 @@ class Zoom {
   // static overlay_;
 
   static {
+    this.min = this.PRESET_ZOOM_FACTORS[0];
+    this.max = this.PRESET_ZOOM_FACTORS.at(-1);
+
     this.changingBrowserZoomMode = true;
     chrome.runtime.sendMessage('', () => {
       this.changingBrowserZoomMode = false;
@@ -379,6 +397,20 @@ class Zoom {
 
   static init() {
     // document.body.append(this.overlay_);
+  }
+
+  // /** https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/common/page/page_zoom.cc;l=32;drc=938b37a6d2886bf8335fc7db792f1eb46c65b2ae */
+  // static equals(a, b) {
+  //   return Math.abs(a - b) <= 0.001;
+  // }
+
+  /** https://source.chromium.org/chromium/chromium/src/+/main:components/zoom/page_zoom.cc;l=109;drc=451126413f90723c23b397b866f8d6cac8ae30fe */
+  static next() {
+    return this.PRESET_ZOOM_FACTORS.find((value) => value > this.factor_);
+  }
+  static prev() {
+    // @ts-ignore https://tc39.es/proposal-array-find-from-last/#sec-array.prototype.findlast
+    return this.PRESET_ZOOM_FACTORS.findLast((value) => value < this.factor_);
   }
 
   // static show_() {
@@ -539,3 +571,21 @@ window.addEventListener('keydown', (e) => {
     }
   }
 });
+window.addEventListener('wheel', (e) => {
+  // https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/resources/pdf/gesture_detector.ts;l=139;drc=20a35c13bf7784939b81d9e8561eade9b557ccc1
+  if (!e.ctrlKey) {
+    return;
+  }
+
+  if (e.deltaY > 0) {
+    if (Zoom.factor > Zoom.min) {
+      Fit.zoomToCursor(Zoom.prev(), e);
+    }
+    e.preventDefault();
+  } else if (e.deltaY < 0) {
+    if (Zoom.factor < Zoom.max) {
+      Fit.zoomToCursor(Zoom.next(), e);
+    }
+    e.preventDefault();
+  }
+}, {passive: false});
