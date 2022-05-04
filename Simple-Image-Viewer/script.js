@@ -192,6 +192,8 @@ const FittingType = {
 };
 
 class Viewport {
+  // /** @type {number} */
+  // static yExpected;
   /** @private @type {FittingType} */
   static fittingType_;
 
@@ -314,6 +316,7 @@ class Viewport {
     let scrollY = Win.scrollY;
     let x = (scrollX + inner[0]) / Zoom.factor;
     let y = (scrollY + inner[1]) / Zoom.factor;
+    // console.log('transformTo y', img.y, scrollY.toFixed(2), inner[1].toFixed(2), y.toFixed(2), this.yExpected);
 
     const x0 = x - img.fullWidth / 2;
     const y0 = y - img.fullHeight / 2;
@@ -521,6 +524,7 @@ function undoDefault() {
       undoDefault();
       Win.calcFullSize();
       Zoom.init();
+      // Viewport.yExpected = img.fullHeight / 2;
       Viewport.fittingType = FittingType.INITIAL;
     }
   });
