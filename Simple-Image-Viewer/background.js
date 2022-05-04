@@ -1,5 +1,18 @@
 'use strict';
 
+chrome.runtime.onMessage.addListener((message, {tab: {id: tabId}}, sendResponse) => {
+  if (typeof message === 'number') {
+    chrome.tabs.setZoom(tabId, message, () => {
+      sendResponse();
+    });
+  } else {
+    chrome.tabs.setZoomSettings(tabId, {mode: 'manual'}, () => {
+      sendResponse();
+    });
+  }
+  return true;
+});
+
 chrome.browserAction.onClicked.addListener(() => chrome.tabs.create({url: `chrome://extensions/?id=${chrome.runtime.id}`}));
 
 function init() {

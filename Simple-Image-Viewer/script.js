@@ -198,8 +198,6 @@ const FittingType = {
 class Fit {
   /** @private @type {symbol} */
   static fittingType_;
-  /** @private @type {number} */
-  static zoomFactor_;
 
   static set fittingType(/** @type {FittingType} */ value) {
     this.fittingType_ = value;
@@ -207,8 +205,8 @@ class Fit {
   }
 
   static applyZoomFactor() {
-    img.width = img.fullWidth * this.zoomFactor_;
-    img.height = img.fullHeight * this.zoomFactor_;
+    img.width = img.fullWidth * Zoom.factor;
+    img.height = img.fullHeight * Zoom.factor;
     img.x = (Win.width - img.width) / 2;
     img.y = (Win.height - img.height) / 2;
 
@@ -278,18 +276,18 @@ class Fit {
   static calcZoomFactor_(/** @type {symbol} */ fittingType) {
     switch (fittingType) {
       case FittingType.FIT:
-        this.zoomFactor_ = this.isFitHeightAvailable_() ?
+        Zoom.factor = this.isFitHeightAvailable_() ?
           Win.fullHeight / img.fullHeight :
           Win.fullWidth / img.fullWidth;
         break;
       case FittingType.FILL:
-        this.zoomFactor_ = this.isFillHeightAvailable_() ?
+        Zoom.factor = this.isFillHeightAvailable_() ?
           (Win.fullHeight - Win.scrollbarHeight) / img.fullHeight :
           (Win.fullWidth - Win.scrollbarWidth) / img.fullWidth;
         break;
       case FittingType.INITIAL:
       case FittingType.NONE:
-        this.zoomFactor_ = 1;
+        Zoom.factor = 1;
         break;
     }
   }
@@ -304,8 +302,8 @@ class Fit {
     let inner = getInner();
     let scrollX = Win.scrollX;
     let scrollY = Win.scrollY;
-    let x = (scrollX + inner[0]) / this.zoomFactor_;
-    let y = (scrollY + inner[1]) / this.zoomFactor_;
+    let x = (scrollX + inner[0]) / Zoom.factor;
+    let y = (scrollY + inner[1]) / Zoom.factor;
 
     const x0 = x - img.fullWidth / 2;
     const y0 = y - img.fullHeight / 2;
@@ -320,11 +318,69 @@ class Fit {
     y = x0 * sin + y0 * cos + img.fullHeight / 2;
 
     inner = getInner();
-    scrollX = x * this.zoomFactor_ - inner[0];
-    scrollY = y * this.zoomFactor_ - inner[1];
+    scrollX = x * Zoom.factor - inner[0];
+    scrollY = y * Zoom.factor - inner[1];
 
     Win.scrollTo(scrollX, scrollY);
   }
+}
+
+// Zoom
+class Zoom {
+  static changingBrowserZoomMode = false;
+  static changingBrowserZoom = false;
+  /** @private @type {number} */
+  static factor_;
+  // /** @private @type {number} */
+  // static timer_;
+  // /** @private @type {HTMLSpanElement} */
+  // static overlay_;
+
+  static {
+    this.changingBrowserZoomMode = true;
+    chrome.runtime.sendMessage('', () => {
+      this.changingBrowserZoomMode = false;
+      Win.calcScrollbarSize();
+      Fit.update();
+    });
+
+    // this.overlay_ = document.createElement('span');
+    // this.overlay_.style.display = 'none';
+    // this.overlay_.classList.add('overlay');
+  }
+
+  static get factor() {
+    return this.factor_;
+  }
+  static set factor(value) {
+    this.factor_ = value;
+    // this.show_();
+
+    if (this.changingBrowserZoomMode || this.changingBrowserZoom) {
+      return;
+    }
+
+    this.changingBrowserZoom = true;
+    // console.log('changing browser zoom', value);
+    chrome.runtime.sendMessage(value, () => {
+      this.changingBrowserZoom = false;
+      // console.log('browser zoom changed', value);
+    });
+  }
+
+  static init() {
+    // document.body.append(this.overlay_);
+  }
+
+  // static show_() {
+  //   this.overlay_.textContent = `${(this.factor_ * 100).toFixed(0)}%`;
+  //   this.overlay_.style.display = '';
+
+  //   clearTimeout(this.timer_);
+  //   this.timer_ = setTimeout(() => {
+  //     this.overlay_.style.display = 'none';
+  //   }, 1000);
+  // }
 }
 
 // Rotate
@@ -417,7 +473,7 @@ function undoDefault() {
 
       undoDefault();
       Win.calcSize();
-      Win.calcScrollbarSize();
+      Zoom.init();
       Fit.fittingType = FittingType.INITIAL;
 
       observer.disconnect();

@@ -20,3 +20,14 @@ img {
   background-color: initial !important;
   transition: background-color 500ms;
 } */
+ 
+/* .overlay {
+  position: fixed;
+  top: 25px;
+  right: 0;
+  padding: 3px 6px;
+  background-color: #fffc;
+  color: #000000b3;
+  font-family: system-ui;
+  font-size: 14px;
+} */
