@@ -15,11 +15,13 @@ chrome.runtime.onMessage.addListener((message, {tab: {id: tabId}}, sendResponse)
 
 // zoomchange event mapping
 chrome.tabs.onZoomChange.addListener(({tabId, oldZoomFactor, newZoomFactor}) => {
-  if (oldZoomFactor !== newZoomFactor) { // skip origin tab updates
-    chrome.tabs.sendMessage(tabId, newZoomFactor, () => {
-      chrome.runtime.lastError; // ignore
-    });
+  if (oldZoomFactor === newZoomFactor) {
+    return; // skip origin tab updates
   }
+
+  chrome.tabs.sendMessage(tabId, newZoomFactor, () => {
+    chrome.runtime.lastError; // ignore
+  });
 });
 
 chrome.browserAction.onClicked.addListener(() => chrome.tabs.create({url: `chrome://extensions/?id=${chrome.runtime.id}`}));

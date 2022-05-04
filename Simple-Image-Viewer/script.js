@@ -24,14 +24,14 @@ class Win {
   /** @private @type {number} */
   static fullHeight_;
   /**
-  * fractional part
-  * @private @type {number}
-  */
+   * fractional part
+   * @private @type {number}
+   */
   static scrollXF_ = 0;
   /**
-  * fractional part
-  * @private @type {number}
-  */
+   * fractional part
+   * @private @type {number}
+   */
   static scrollYF_ = 0;
 
   static get fullWidth() {
@@ -40,14 +40,12 @@ class Win {
   static get fullHeight() {
     return this.fullHeight_;
   }
+
   static get width() {
     return this.isVerticalScrollbarVisible() ? this.fullWidth_ - this.scrollbarWidth : this.fullWidth_;
   }
   static get height() {
     return this.isHorizontalScrollbarVisible() ? this.fullHeight_ - this.scrollbarHeight : this.fullHeight_;
-  }
-  static get ratio() {
-    return this.fullWidth_ / this.fullHeight_;
   }
 
   static get scrollX() {
@@ -80,7 +78,7 @@ class Win {
     this.scrollYF_ = scrollY - internalScrollY;
   }
 
-  static calcSize() {
+  static calcFullSize() {
     document.documentElement.style.overflow = 'hidden';
     this.fullWidth_ = Pixels.parse(visualViewport.width);
     this.fullHeight_ = Pixels.parse(visualViewport.height);
@@ -169,9 +167,6 @@ class Img {
       this.element.style.width = Pixels.toString(value);
     }
   }
-  get ratio() {
-    return this.fullWidth / this.fullHeight;
-  }
 
   get orientation() {
     return this.orientation_;
@@ -183,7 +178,8 @@ class Img {
   }
 }
 
-// Fit
+// Viewport
+// https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/resources/pdf/viewport.ts
 /** @enum {symbol} */
 const FittingType = {
   FIT: Symbol('fit'),
@@ -195,8 +191,8 @@ const FittingType = {
   INITIAL: Symbol('initial'),
 };
 
-class Fit {
-  /** @private @type {symbol} */
+class Viewport {
+  /** @private @type {FittingType} */
   static fittingType_;
 
   static set fittingType(/** @type {FittingType} */ value) {
@@ -214,15 +210,11 @@ class Fit {
   }
 
   static update() {
-    let fittingType = this.fittingType_;
-    if (fittingType === FittingType.INITIAL && this.isFitAvailable() || fittingType === FittingType.FILL && !this.isFillAvailable_()) {
-      fittingType = FittingType.FIT;
-    }
-    this.calcZoomFactor_(fittingType);
+    this.calcZoomFactor_();
     this.applyZoomFactor();
   }
 
-  static applyFit(/** @type {symbol} */ fittingType) {
+  static offerFittingType(/** @type {FittingType} */ fittingType) {
     if (this.fittingType_ === fittingType) {
       return;
     }
@@ -257,7 +249,8 @@ class Fit {
     // winWidth / winHeight > imgWidth / imgHeight
   }
 
-  static isFitAvailable() {
+  /** @private */
+  static isFitAvailable_() {
     return Win.fullWidth < img.fullWidth || Win.fullHeight < img.fullHeight;
   }
 
@@ -283,7 +276,15 @@ class Fit {
   }
 
   /** @private */
-  static calcZoomFactor_(/** @type {symbol} */ fittingType) {
+  static calcZoomFactor_() {
+    let fittingType = this.fittingType_;
+    if (Zoom.changingBrowserZoomMode) {
+      fittingType = FittingType.INITIAL;
+    }
+    if (fittingType === FittingType.INITIAL && this.isFitAvailable_() || fittingType === FittingType.FILL && !this.isFillAvailable_()) {
+      fittingType = FittingType.FIT;
+    }
+
     switch (fittingType) {
       case FittingType.FIT:
         Zoom.factor = this.isFitHeightAvailable_() ?
@@ -342,7 +343,9 @@ class Fit {
 
 // Zoom
 class Zoom {
+  /** @type {boolean} */
   static changingBrowserZoomMode = false;
+  /** @type {boolean} */
   static changingBrowserZoom = false;
   /** @type {number} */
   static min;
@@ -368,7 +371,7 @@ class Zoom {
     chrome.runtime.sendMessage('', () => {
       this.changingBrowserZoomMode = false;
       Win.calcScrollbarSize();
-      Fit.update();
+      Viewport.update();
     });
 
     // this.overlay_ = document.createElement('span');
@@ -434,14 +437,16 @@ class Rotate {
   }
   /** @private */
   static do_(/** @type {number} */ orientation) {
-    Fit.transformToCenter(() => {
+    Viewport.transformToCenter(() => {
       img.orientation = orientation % 4;
-      Fit.update();
+      Viewport.update();
     });
   }
 }
 
-// Move
+// ViewportScroller
+// https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/resources/pdf/viewport_scroller.ts
+/** Scrolls the page in response to mouse drag. */
 class ViewportScroller {
   /** @private @type {number} */
   static offsetX_;
@@ -510,14 +515,13 @@ function undoDefault() {
 
   const observer = new MutationObserver(() => {
     if (document.body) {
-      img = new Img(/** @type {HTMLImageElement} */ (document.body.firstElementChild));
-
-      undoDefault();
-      Win.calcSize();
-      Zoom.init();
-      Fit.fittingType = FittingType.INITIAL;
-
       observer.disconnect();
+
+      img = new Img(/** @type {HTMLImageElement} */ (document.body.firstElementChild));
+      undoDefault();
+      Win.calcFullSize();
+      Zoom.init();
+      Viewport.fittingType = FittingType.INITIAL;
     }
   });
   observer.observe(document.documentElement, {childList: true});
@@ -525,7 +529,7 @@ function undoDefault() {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!Zoom.changingBrowserZoom && !Zoom.changingBrowserZoomMode) {
-    Fit.zoomToCenter(message);
+    Viewport.zoomToCenter(message);
   }
   sendResponse();
 });
@@ -533,12 +537,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // Events
 window.addEventListener('DOMContentLoaded', () => {
   undoDefault();
-  Fit.applyZoomFactor();
+  Viewport.applyZoomFactor();
 });
 window.addEventListener('resize', (e) => {
-  Fit.transformToCenter(() => {
-    Win.calcSize();
-    Fit.update();
+  Viewport.transformToCenter(() => {
+    Win.calcFullSize();
+    Viewport.update();
   });
 
   e.stopImmediatePropagation();
@@ -557,13 +561,13 @@ window.addEventListener('keydown', (e) => {
   } else {
     switch (e.code) {
       case 'Digit1':
-        Fit.zoomToCenter(1);
+        Viewport.zoomToCenter(1);
         break;
       case 'Digit2':
-        Fit.applyFit(FittingType.FILL);
+        Viewport.offerFittingType(FittingType.FILL);
         break;
       case 'Digit3':
-        Fit.applyFit(FittingType.FIT);
+        Viewport.offerFittingType(FittingType.FIT);
         break;
       case 'KeyR':
         Rotate.cw();
@@ -579,12 +583,12 @@ window.addEventListener('wheel', (e) => {
 
   if (e.deltaY > 0) {
     if (Zoom.factor > Zoom.min) {
-      Fit.zoomToCursor(Zoom.prev(), e);
+      Viewport.zoomToCursor(Zoom.prev(), e);
     }
     e.preventDefault();
   } else if (e.deltaY < 0) {
     if (Zoom.factor < Zoom.max) {
-      Fit.zoomToCursor(Zoom.next(), e);
+      Viewport.zoomToCursor(Zoom.next(), e);
     }
     e.preventDefault();
   }
