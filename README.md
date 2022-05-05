@@ -4,8 +4,9 @@
 * No false positives. Detects image tabs in the same way as the browser.
 * No flicker. Loads before the default viewer.
 * No appearance changes. It can be changed by other extensions.
-* Changing the fitting type stretches small images.
-* Resizing the window centers the image.
+* The fitting type changing stretches small images.
+* Rotation around center.
+* Window resizing centers the image.
 * Zoom both to the window center and to the cursor.
 * Integration into the default zoom system. Doesn't affect the page's origin.
 * Panning uses scrollbars.
